@@ -1,8 +1,12 @@
 package org.point85.operations;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.List;
+
+import org.point85.core.persistence.PersistencyService;
+import org.point85.core.plant.PlantEntity;
+import org.point85.core.plant.Reason;
 
 import com.vaadin.data.TreeData;
 import com.vaadin.data.provider.TreeDataProvider;
@@ -13,7 +17,6 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DateTimeField;
 import com.vaadin.ui.FormLayout;
-import com.vaadin.ui.Grid;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.IconGenerator;
@@ -33,8 +36,7 @@ public class EquipmentForm extends VerticalLayout {
 
 	private TextField tfReason;
 	private Tree<String> entityTree;
-	private TreeGrid<Project> reasonTreeGrid;
-	private Grid<Project> materialGrid;
+	private TreeGrid<Reason> reasonTreeGrid;
 
 	public EquipmentForm() {
 
@@ -53,8 +55,8 @@ public class EquipmentForm extends VerticalLayout {
 		// footer
 		addComponent(createFooter());
 
-		populateTreeGrid();
-		populateTree();
+		populateReasonGrid();
+		populateTopEntityNodes();
 	}
 
 	private Component createMainPanel() {
@@ -100,7 +102,7 @@ public class EquipmentForm extends VerticalLayout {
 		// event reason
 		eventPanel.addComponent(createReasonPanel());
 
-		// tree grid of reasons		
+		// tree grid of reasons
 		eventPanel.addComponent(createReasonTreePanel());
 
 		return eventPanel;
@@ -121,10 +123,10 @@ public class EquipmentForm extends VerticalLayout {
 	}
 
 	private Component createEntityTreePanel() {
-		//Panel entityTreeLayout = new Panel();
-		//entityTreeLayout.setContent(createEntityTree());
-		//entityTreeLayout.setMargin(false);
-		
+		// Panel entityTreeLayout = new Panel();
+		// entityTreeLayout.setContent(createEntityTree());
+		// entityTreeLayout.setMargin(false);
+
 		VerticalLayout layout = new VerticalLayout();
 		layout.setMargin(false);
 		layout.addComponentsAndExpand(createEntityTree());
@@ -172,14 +174,13 @@ public class EquipmentForm extends VerticalLayout {
 		reasonTreeGrid.addExpandListener(event -> System.out.println("Item expanded: " + event.getExpandedItem()));
 		reasonTreeGrid.addCollapseListener(event -> System.out.println("Item collapsed: " + event.getCollapsedItem()));
 		reasonTreeGrid.addItemClickListener(event -> tfReason.setValue(event.getItem().getName()));
-		
+
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.addComponentsAndExpand(reasonTreeGrid);
-		layout.setMargin(true);	
+		layout.setMargin(true);
 
 		return layout;
 	}
-	
 
 	private Component createReasonPanel() {
 		FormLayout reasonLayout = new FormLayout();
@@ -198,98 +199,44 @@ public class EquipmentForm extends VerticalLayout {
 		Button btnExecute = new Button("Do It!");
 		btnExecute.setStyleName(ValoTheme.BUTTON_PRIMARY);
 		btnExecute.setDescription("Button description");
-		btnExecute.addClickListener(event -> {updateTree(); updateTreeGrid();});
+		btnExecute.addClickListener(event -> Notification.show("Thanks!"));
 
 		reasonLayout.addComponents(tfReason, dtfTime, btnExecute);
-		
-		//HorizontalLayout layout = new HorizontalLayout();
-		//layout.setSizeFull();
-		//layout.addComponent(reasonLayout);
+
+		// HorizontalLayout layout = new HorizontalLayout();
+		// layout.setSizeFull();
+		// layout.addComponent(reasonLayout);
 
 		return reasonLayout;
 	}
 
-	private void populateTree() {
-		// An initial planet tree
+	private void populateTopEntityNodes() {
+
+		// fetch the entities
+		List<PlantEntity> entities = PersistencyService.getInstance().fetchTopPlantEntities();
+		Collections.sort(entities);
+
+		// An initial entity tree
 		TreeData<String> treeData = new TreeData<>();
 
-		// Couple of childless root items
-		treeData.addItem(null, "Mercury");
-		treeData.addItem(null, "Venus");
-
-		// Items with hierarchy
-		treeData.addItem(null, "Earth");
-		treeData.addItem("Earth", "The Moon");
+		// add the roots
+		for (PlantEntity entity : entities) {
+			treeData.addItem(null, entity.getName());
+		}
 
 		TreeDataProvider<String> inMemoryDataProvider = new TreeDataProvider<>(treeData);
 		entityTree.setDataProvider(inMemoryDataProvider);
-		// tree.expand("Earth");
 	}
 
-	private Collection<Project> getRootProjects() {
-		Collection<Project> projects = new HashSet<>();
-		Project p1 = new Project("Project1", 100);
+	private void populateReasonGrid() {
+		List<Reason> reasons = PersistencyService.getInstance().fetchTopReasons();
 
-		p1.getSubProjects().add(new Project("Project11", 1));
-		p1.getSubProjects().add(new Project("Project12", 2));
-
-		projects.add(p1);
-
-		return projects;
-	}
-
-	private void populateTreeGrid() {
 		// Initialize a TreeGrid and set in-memory data
-		reasonTreeGrid.setItems(getRootProjects(), Project::getSubProjects);
+		reasonTreeGrid.setItems(reasons, Reason::getChildren);
 
 		// The first column gets the hierarchy indicator by default
-		reasonTreeGrid.addColumn(Project::getName).setCaption("Project Name");
-		reasonTreeGrid.addColumn(Project::getHoursDone).setCaption("Hours Done");
-		reasonTreeGrid.addColumn(Project::getLastModified).setCaption("Last Modified");
+		reasonTreeGrid.addColumn(Reason::getName).setCaption("Name");
+		reasonTreeGrid.addColumn(Reason::getDescription).setCaption("Description");
+		reasonTreeGrid.addColumn(Reason::getLossCategory).setCaption("Loss Category");
 	}
-	
-	private void addRecursively(TreeData<Project> treeData, Project parent) {
-		treeData.addItems(parent, parent.getSubProjects());
-		for (Project child : parent.getSubProjects()) {
-			this.addRecursively(treeData, child);
-		}
-	}
-
-	private void updateTreeGrid() {
-		TreeDataProvider<Project> dataProvider = (TreeDataProvider<Project>) reasonTreeGrid.getDataProvider();
-		TreeData<Project> treeData = dataProvider.getTreeData();
-
-		// add new items
-		Project newRoot = new Project("Project200", 200);
-
-		Project p21 = new Project("Project21", 3);
-		p21.getSubProjects().add(new Project("Project211", 211));
-		p21.getSubProjects().add(new Project("Project212", 212));
-		p21.getSubProjects().add(new Project("Project213", 213));
-		
-		newRoot.getSubProjects().add(p21);
-		newRoot.getSubProjects().add(new Project("Project22", 4));
-
-		treeData.addItem(null, newRoot);
-		//treeData.addItems(newRoot, newRoot.getSubProjects());
-		this.addRecursively(treeData, newRoot);
-
-		// after adding / removing data, data provider needs to be refreshed
-		dataProvider.refreshAll();
-	}
-
-	private void updateTree() {
-		TreeDataProvider<String> dataProvider = (TreeDataProvider<String>) entityTree.getDataProvider();
-		TreeData<String> treeData = dataProvider.getTreeData();
-
-		// Add Mars with satellites
-		treeData.addItem(null, "Mars");
-		treeData.addItem("Mars", "Phobos");
-		treeData.addItem("Mars", "Deimos");
-
-		dataProvider.refreshAll();
-
-		Notification.show("Tree Updated!");
-	}
-
 }
