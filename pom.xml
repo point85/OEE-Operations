@@ -66,6 +66,96 @@
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-themes</artifactId>
 		</dependency>
+		
+<!--  OPC UA -->
+<!-- https://mvnrepository.com/artifact/org.eclipse.milo/sdk-client -->
+<dependency>
+    <groupId>org.eclipse.milo</groupId>
+    <artifactId>sdk-client</artifactId>
+    <version>0.1.6</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.eclipse.milo/sdk-core -->
+<dependency>
+    <groupId>org.eclipse.milo</groupId>
+    <artifactId>sdk-core</artifactId>
+    <version>0.1.6</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.eclipse.milo/stack-client -->
+<dependency>
+    <groupId>org.eclipse.milo</groupId>
+    <artifactId>stack-client</artifactId>
+    <version>0.1.6</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.eclipse.milo/stack-core -->
+<dependency>
+    <groupId>org.eclipse.milo</groupId>
+    <artifactId>stack-core</artifactId>
+    <version>0.1.6</version>
+</dependency>		
+		
+		<!-- HIBERNATE JPA -->
+<!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-core</artifactId>
+    <version>5.2.12.Final</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-c3p0 -->
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-c3p0</artifactId>
+    <version>5.2.12.Final</version>
+</dependency>
+
+<!-- LOGGING -->
+<!-- https://mvnrepository.com/artifact/log4j/log4j -->
+<dependency>
+    <groupId>log4j</groupId>
+    <artifactId>log4j</artifactId>
+    <version>1.2.17</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>1.7.25</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-log4j12</artifactId>
+    <version>1.7.25</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.slf4j/jul-to-slf4j -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>jul-to-slf4j</artifactId>
+    <version>1.7.25</version>
+</dependency>
+
+<!-- DATABASE -->
+<!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/mssql-jdbc -->
+<dependency>
+    <groupId>com.microsoft.sqlserver</groupId>
+    <artifactId>mssql-jdbc</artifactId>
+    <version>6.2.2.jre8</version>
+</dependency>
+
+<!-- OEE Domain jar -->
+<dependency>
+    <groupId>org.point85.domain</groupId>
+    <artifactId>oee-domain</artifactId>
+    <version>1.0</version>
+    <scope>system</scope>
+    <systemPath>${project.basedir}/lib/OEE-Domain.jar</systemPath>
+</dependency>
 	</dependencies>
 
 	<build>
