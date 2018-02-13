@@ -6,7 +6,7 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operations</artifactId>
 	<packaging>war</packaging>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>
@@ -150,13 +150,10 @@
 
 <!-- OEE Domain jar -->
 <dependency>
-    <groupId>org.point85.domain</groupId>
+    <groupId>org.point85</groupId>
     <artifactId>oee-domain</artifactId>
     <version>1.0</version>
-    <scope>system</scope>
-    <systemPath>${project.basedir}/lib/OEE-Domain.jar</systemPath>
 </dependency>
-
 
 	</dependencies>
 

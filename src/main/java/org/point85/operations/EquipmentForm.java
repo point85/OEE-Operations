@@ -1,12 +1,18 @@
 package org.point85.operations;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.point85.core.persistence.PersistencyService;
+import org.point85.core.plant.Equipment;
+import org.point85.core.plant.NamedObject;
 import org.point85.core.plant.PlantEntity;
 import org.point85.core.plant.Reason;
+import org.point85.core.script.ScriptResolverType;
 
 import com.vaadin.data.TreeData;
 import com.vaadin.data.provider.TreeDataProvider;
@@ -17,6 +23,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DateTimeField;
 import com.vaadin.ui.FormLayout;
+import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.IconGenerator;
@@ -35,8 +42,11 @@ public class EquipmentForm extends VerticalLayout {
 	private static final long serialVersionUID = 6073934288316949481L;
 
 	private TextField tfReason;
+	private DateTimeField dtfTime;
 	private Tree<String> entityTree;
 	private TreeGrid<Reason> reasonTreeGrid;
+	
+	private EventCollector eventCollector = new EventCollector();
 
 	public EquipmentForm() {
 
@@ -154,6 +164,7 @@ public class EquipmentForm extends VerticalLayout {
 
 	private Tree<String> createEntityTree() {
 		entityTree = new Tree<String>();
+		entityTree.setSelectionMode(SelectionMode.SINGLE);
 		entityTree.setCaption("Plant Entities");
 		entityTree.setItemIconGenerator(new IconGenerator<String>() {
 			private static final long serialVersionUID = 5138538319672111077L;
@@ -191,15 +202,21 @@ public class EquipmentForm extends VerticalLayout {
 		tfReason.setIcon(VaadinIcons.REPLY);
 		tfReason.setRequiredIndicatorVisible(true);
 
-		DateTimeField dtfTime = new DateTimeField("Event Time");
+		dtfTime = new DateTimeField("Event Time");
 		dtfTime.setValue(LocalDateTime.now());
 		dtfTime.setIcon(VaadinIcons.TIME_FORWARD);
 		dtfTime.setRequiredIndicatorVisible(true);
 
-		Button btnExecute = new Button("Do It!");
+		Button btnExecute = new Button("Record");
 		btnExecute.setStyleName(ValoTheme.BUTTON_PRIMARY);
 		btnExecute.setDescription("Button description");
-		btnExecute.addClickListener(event -> Notification.show("Thanks!"));
+		btnExecute.addClickListener(event -> {
+			try {
+				recordEvent();
+			} catch (Exception e) {
+				// TODO
+			}
+		});
 
 		reasonLayout.addComponents(tfReason, dtfTime, btnExecute);
 
@@ -208,6 +225,37 @@ public class EquipmentForm extends VerticalLayout {
 		// layout.addComponent(reasonLayout);
 
 		return reasonLayout;
+	}
+	
+	private void recordEvent() throws Exception {
+		Set<String> entities = entityTree.getSelectedItems();
+		
+		if (entities.size() == 0) {
+			Notification.show("Equipment must be selected in order to record the event.");
+			return;
+		}
+		String equipmentName = (String) entities.toArray()[0];
+		
+		NamedObject namedObject = PersistencyService.getInstance().fetchByName(PlantEntity.ENTITY_BY_NAME, equipmentName);
+		
+		if (!(namedObject instanceof Equipment)) {
+			Notification.show("Equipment must be selected in order to record the event.");
+			return;
+		}
+		
+		String reason = tfReason.getValue();
+		
+		if (reason == null || reason.length() == 0) {
+			Notification.show("A reason must be selected.");
+			return;	
+		}
+		
+		// TODO use AppUtils
+		LocalDateTime ldt = dtfTime.getValue();
+		ZoneOffset offset = OffsetDateTime.now().getOffset();
+		
+		eventCollector.resolveEvent(ScriptResolverType.AVAILABILITY, reason, OffsetDateTime.of(ldt, offset));
+
 	}
 
 	private void populateTopEntityNodes() {
