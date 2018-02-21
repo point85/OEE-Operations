@@ -214,7 +214,7 @@ public class EquipmentForm extends VerticalLayout {
 			try {
 				recordEvent();
 			} catch (Exception e) {
-				// TODO
+				Notification.show(e.getMessage());
 			}
 		});
 
