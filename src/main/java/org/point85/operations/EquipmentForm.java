@@ -2,18 +2,24 @@ package org.point85.operations;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.point85.app.AppUtils;
 import org.point85.core.persistence.PersistencyService;
+import org.point85.core.plant.EntityLevel;
 import org.point85.core.plant.Equipment;
-import org.point85.core.plant.NamedObject;
+import org.point85.core.plant.EquipmentMaterial;
+import org.point85.core.plant.Material;
 import org.point85.core.plant.PlantEntity;
 import org.point85.core.plant.Reason;
 import org.point85.core.script.ScriptResolverType;
+import org.point85.core.uom.UnitOfMeasure;
 
 import com.vaadin.data.TreeData;
 import com.vaadin.data.provider.TreeDataProvider;
@@ -23,7 +29,6 @@ import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DateTimeField;
-import com.vaadin.ui.FormLayout;
 import com.vaadin.ui.Grid.SelectionMode;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.HorizontalSplitPanel;
@@ -42,23 +47,29 @@ import com.vaadin.ui.themes.ValoTheme;
 
 public class EquipmentForm extends VerticalLayout {
 	private static final long serialVersionUID = 6073934288316949481L;
-	
+
 	private static final String PROD_GOOD = "Good";
 	private static final String PROD_REJECT = "Reject/Rework";
 	private static final String PROD_TOTAL = "Total";
-	
 
 	private TextField tfReason;
 	private DateTimeField dtfAvailabilityTime;
-	private Tree<String> entityTree;
+	private Tree<EntityNode> entityTree;
 	private TreeGrid<Reason> reasonTreeGrid;
 
 	private RadioButtonGroup<String> productionGroup;
+
 	private TextField tfAmount;
 	private DateTimeField dtfProductionTime;
 
+	private Label lbUOM;
+
+	private Label lbMaterialId;
+	private Label lbMaterialDescription;
+	private Label lbJob;
+
 	private EventCollector eventCollector = new EventCollector();
-	
+
 	private ScriptResolverType resolverType;
 
 	public EquipmentForm() {
@@ -102,6 +113,17 @@ public class EquipmentForm extends VerticalLayout {
 		TabSheet tabSheet = new TabSheet();
 		tabSheet.setSizeFull();
 		tabSheet.setStyleName(ValoTheme.TABSHEET_FRAMED);
+
+		tabSheet.addSelectedTabChangeListener(event -> {
+			try {
+				// Object source = event.getSource();
+
+				// onTabSelection(source);
+			} catch (Exception e) {
+				Notification.show(e.getMessage());
+			}
+		});
+
 		Tab eventTab = tabSheet.addTab(createEventPanel());
 		eventTab.setCaption("Availability");
 		eventTab.setIcon(VaadinIcons.EJECT);
@@ -137,12 +159,12 @@ public class EquipmentForm extends VerticalLayout {
 		productionGroup.setItems(PROD_GOOD, PROD_REJECT, PROD_TOTAL);
 		productionGroup.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
 		productionGroup.setRequiredIndicatorVisible(true);
-		
+
 		productionGroup.addSelectionListener(event -> {
 			try {
 				Optional<String> item = event.getSelectedItem();
-				
-				setScriptResolverType(item.get());
+
+				onSelectResolverType(item.get());
 			} catch (Exception e) {
 				Notification.show(e.getMessage());
 			}
@@ -151,13 +173,13 @@ public class EquipmentForm extends VerticalLayout {
 		tfAmount = new TextField("Quantity");
 		tfAmount.setIcon(VaadinIcons.REPLY);
 		tfAmount.setRequiredIndicatorVisible(true);
-		
-		TextField tfUOM = new TextField("Unit");
-		tfUOM.setWidth("75px");
-		tfUOM.setEnabled(false);
-		tfUOM.setValue("cans");
-		//Label lbUOM = new Label("Unit");
-		//lbUOM.setWidth("75px");
+
+		/*
+		 * TextField tfUOM = new TextField("Unit"); tfUOM.setWidth("75px");
+		 * tfUOM.setEnabled(false); tfUOM.setValue("cans");
+		 */
+		lbUOM = new Label("Unit");
+		lbUOM.setWidth("75px");
 
 		dtfProductionTime = new DateTimeField("Production Time");
 		dtfProductionTime.setValue(LocalDateTime.now());
@@ -174,15 +196,28 @@ public class EquipmentForm extends VerticalLayout {
 				Notification.show(e.getMessage());
 			}
 		});
-		
-		HorizontalLayout quantityLayout = new HorizontalLayout();
-		quantityLayout.addComponents(tfAmount, tfUOM);
 
-		FormLayout productionLayout = new FormLayout();
+		lbMaterialId = new Label("Material");
+		lbMaterialDescription = new Label("Description");
+		lbJob = new Label("Job");
+
+		HorizontalLayout materialLayout = new HorizontalLayout();
+		// materialLayout.setHeight("50px");
+		materialLayout.addComponents(lbMaterialId, lbMaterialDescription, lbJob);
+
+		HorizontalLayout quantityLayout = new HorizontalLayout();
+		quantityLayout.addComponents(tfAmount, lbUOM);
+
+		VerticalLayout productionLayout = new VerticalLayout();
 		productionLayout.setMargin(true);
-		productionLayout.setSizeFull();
-		
-		productionLayout.addComponents(productionGroup, quantityLayout, dtfProductionTime, btnExecute);
+		// productionLayout.setSizeFull();
+
+		// FormLayout formLayout = new FormLayout();
+		// formLayout.setSizeFull();
+		// formLayout.addComponents(productionGroup, quantityLayout, dtfProductionTime,
+		// btnExecute);
+
+		productionLayout.addComponents(materialLayout, productionGroup, quantityLayout, dtfProductionTime, btnExecute);
 
 		return productionLayout;
 	}
@@ -195,10 +230,6 @@ public class EquipmentForm extends VerticalLayout {
 	}
 
 	private Component createEntityTreePanel() {
-		// Panel entityTreeLayout = new Panel();
-		// entityTreeLayout.setContent(createEntityTree());
-		// entityTreeLayout.setMargin(false);
-
 		VerticalLayout layout = new VerticalLayout();
 		layout.setMargin(false);
 		layout.addComponentsAndExpand(createEntityTree());
@@ -224,19 +255,98 @@ public class EquipmentForm extends VerticalLayout {
 		return footer;
 	}
 
-	private Tree<String> createEntityTree() {
-		entityTree = new Tree<String>();
+	private Tree<EntityNode> createEntityTree() {
+		entityTree = new Tree<>();
 		entityTree.setSelectionMode(SelectionMode.SINGLE);
 		entityTree.setCaption("Plant Entities");
-		entityTree.setItemIconGenerator(new IconGenerator<String>() {
+		entityTree.setItemIconGenerator(new IconGenerator<EntityNode>() {
 			private static final long serialVersionUID = 5138538319672111077L;
 
 			@Override
-			public Resource apply(String item) {
-				return VaadinIcons.AIRPLANE;
+			public Resource apply(EntityNode entityNode) {
+				Resource icon = null;
+				PlantEntity entity = entityNode.getEntity();
+				switch (entity.getLevel()) {
+				case AREA:
+					icon = VaadinIcons.AIRPLANE;
+					break;
+				case ENTERPRISE:
+					icon = VaadinIcons.HAMMER;
+					break;
+				case EQUIPMENT:
+					icon = VaadinIcons.BOOK;
+					break;
+				case PRODUCTION_LINE:
+					icon = VaadinIcons.WALLET;
+					break;
+				case SITE:
+					icon = VaadinIcons.CAMERA;
+					break;
+				case WORK_CELL:
+					icon = VaadinIcons.DIAMOND;
+					break;
+				default:
+					break;
+
+				}
+				return icon;
 			}
 		});
+
+		entityTree.addSelectionListener(event -> {
+			try {
+				EntityNode node = event.getFirstSelectedItem().get();
+				onSelectEntity(node);
+			} catch (Exception e) {
+				Notification.show(e.getMessage());
+			}
+		});
+
 		return entityTree;
+	}
+
+	private void clearAvailability() {
+		tfReason.clear();
+		dtfAvailabilityTime.setValue(LocalDateTime.now());
+	}
+
+	private void clearProduction() {
+		tfAmount.clear();
+		dtfProductionTime.setValue(LocalDateTime.now());
+		productionGroup.clear();
+	}
+
+	private void clearJobMaterial() {
+
+	}
+
+	private void onSelectEntity(EntityNode node) throws Exception {
+		// clear fields
+		clearAvailability();
+		clearProduction();
+		clearJobMaterial();
+
+		Equipment equipment = getSelectedEquipment();
+		String job = equipment.getCurrentJob();
+
+		// current job
+		if (job != null) {
+			lbJob.setValue(job);
+		} else {
+			lbJob.setValue("");
+		}
+
+		// current material
+		Material material = equipment.getCurrentMaterial();
+
+		if (material != null) {
+			lbMaterialId.setValue(material.getName());
+			lbMaterialDescription.setValue(material.getDescription());
+		} else {
+			lbMaterialId.setValue("");
+			lbMaterialDescription.setValue("");
+		}
+
 	}
 
 	private Component createReasonTreePanel() {
@@ -256,9 +366,9 @@ public class EquipmentForm extends VerticalLayout {
 	}
 
 	private Component createReasonPanel() {
-		FormLayout reasonLayout = new FormLayout();
+		VerticalLayout reasonLayout = new VerticalLayout();
 		reasonLayout.setMargin(true);
-		reasonLayout.setSizeFull();
+		// reasonLayout.setSizeFull();
 
 		tfReason = new TextField("Reason");
 		tfReason.setIcon(VaadinIcons.REPLY);
@@ -286,21 +396,20 @@ public class EquipmentForm extends VerticalLayout {
 	}
 
 	private Equipment getSelectedEquipment() throws Exception {
-		Set<String> entities = entityTree.getSelectedItems();
+		Set<EntityNode> entityNodes = entityTree.getSelectedItems();
 
-		if (entities.size() == 0) {
-			throw new Exception("Equipment must be selected in order to record the event.");
-		}
-		String equipmentName = (String) entities.toArray()[0];
-
-		NamedObject namedObject = PersistencyService.getInstance().fetchByName(PlantEntity.ENTITY_BY_NAME,
-				equipmentName);
-
-		if (!(namedObject instanceof Equipment)) {
+		if (entityNodes.size() == 0) {
 			throw new Exception("Equipment must be selected in order to record the event.");
 		}
 
-		return (Equipment) namedObject;
+		Iterator<EntityNode> iter = entityNodes.iterator();
+		PlantEntity entity = iter.next().getEntity();
+
+		if (!entity.getLevel().equals(EntityLevel.EQUIPMENT)) {
+			throw new Exception("Equipment must be selected in order to record the event.");
+		}
+
+		return (Equipment) entity;
 	}
 
 	private void recordAvailabilityEvent() throws Exception {
@@ -316,26 +425,44 @@ public class EquipmentForm extends VerticalLayout {
 
 		eventCollector.resolveEvent(equipment, ScriptResolverType.AVAILABILITY, reason, odt);
 	}
-	
-	private void setScriptResolverType(String type) {
-		resolverType = ScriptResolverType.PROD_GOOD;
-		
-		if (type.equals(PROD_REJECT)) {
+
+	private void onSelectResolverType(String type) throws Exception {
+
+		// update current material/job
+		Equipment equipment = getSelectedEquipment();
+
+		Material material = equipment.getCurrentMaterial();
+
+		// update UOMs
+		EquipmentMaterial eqm = equipment.getEquipmentMaterial(material);
+
+		UnitOfMeasure uom = null;
+
+		if (type.equals(PROD_GOOD)) {
+			resolverType = ScriptResolverType.PROD_GOOD;
+			uom = (eqm != null) ? eqm.getRunRateUOM() : null;
+		} else if (type.equals(PROD_REJECT)) {
 			resolverType = ScriptResolverType.PROD_REJECT;
+			uom = (eqm != null) ? eqm.getRejectUOM() : null;
 		} else if (type.equals(PROD_TOTAL)) {
 			resolverType = ScriptResolverType.PROD_TOTAL;
+			uom = (eqm != null) ? eqm.getInputUOM() : null;
+		}
+
+		if (uom != null) {
+			lbUOM.setValue(uom.getSymbol());
 		}
 	}
 
 	private void recordProductionEvent() throws Exception {
 		Equipment equipment = getSelectedEquipment();
-		
+
 		if (resolverType == null) {
 			throw new Exception("A production type must be selected.");
 		}
-		
+
 		Double amount = Double.valueOf(tfAmount.getValue());
-		
+
 		OffsetDateTime odt = AppUtils.fromLocalDateTime(dtfProductionTime.getValue());
 
 		eventCollector.resolveEvent(equipment, resolverType, amount, odt);
@@ -344,23 +471,29 @@ public class EquipmentForm extends VerticalLayout {
 	private void populateTopEntityNodes() {
 
 		// fetch the entities
-		List<PlantEntity> entities = PersistencyService.getInstance().fetchTopPlantEntities();
+		List<PlantEntity> entities = PersistencyService.instance().fetchTopPlantEntities();
 		Collections.sort(entities);
 
-		// An initial entity tree
-		TreeData<String> treeData = new TreeData<>();
+		List<EntityNode> entityNodes = new ArrayList<>();
 
-		// add the roots
 		for (PlantEntity entity : entities) {
-			treeData.addItem(null, entity.getName());
+			entityNodes.add(new EntityNode(entity));
 		}
 
-		TreeDataProvider<String> inMemoryDataProvider = new TreeDataProvider<>(treeData);
-		entityTree.setDataProvider(inMemoryDataProvider);
+		// An initial entity tree
+		TreeData<EntityNode> treeData = new TreeData<>();
+
+		// add the roots
+		treeData.addItems(null, entityNodes);
+
+		entityNodes.forEach(entityNode -> treeData.addItems(entityNode, entityNode.getChildren()));
+
+		TreeDataProvider<EntityNode> dataProvider = new TreeDataProvider<>(treeData);
+		entityTree.setDataProvider(dataProvider);
 	}
 
 	private void populateReasonGrid() {
-		List<Reason> reasons = PersistencyService.getInstance().fetchTopReasons();
+		List<Reason> reasons = PersistencyService.instance().fetchTopReasons();
 
 		// Initialize a TreeGrid and set in-memory data
 		reasonTreeGrid.setItems(reasons, Reason::getChildren);
@@ -369,5 +502,37 @@ public class EquipmentForm extends VerticalLayout {
 		reasonTreeGrid.addColumn(Reason::getName).setCaption("Name");
 		reasonTreeGrid.addColumn(Reason::getDescription).setCaption("Description");
 		reasonTreeGrid.addColumn(Reason::getLossCategory).setCaption("Loss Category");
+	}
+
+	private class EntityNode {
+		private PlantEntity entity;
+
+		private EntityNode(PlantEntity entity) {
+			this.entity = entity;
+		}
+
+		private PlantEntity getEntity() {
+			return entity;
+		}
+
+		private Set<EntityNode> getChildren() {
+			Set<EntityNode> children = new HashSet<>();
+
+			for (PlantEntity childEntity : entity.getChildren()) {
+				children.add(new EntityNode(childEntity));
+			}
+			return children;
+		}
+
+		@Override
+		public String toString() {
+			String text = "";
+
+			if (entity != null) {
+				text = entity.getName() + " (" + entity.getDescription() + ")";
+			}
+
+			return text;
+		}
 	}
 }

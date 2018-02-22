@@ -94,7 +94,7 @@ public class EventCollector {
 		EventHistory history = new EventHistory(resolvedItem);
 		history.setReason(resolvedItem.getReason());
 
-		PersistencyService.getInstance().persist(history);
+		PersistencyService.instance().persist(history);
 	}
 
 	private void saveSetupRecord(ResolvedEvent resolvedItem) throws Exception {
@@ -104,7 +104,7 @@ public class EventCollector {
 
 		SetupHistory history = new SetupHistory(resolvedItem);
 
-		PersistencyService.getInstance().persist(history);
+		PersistencyService.instance().persist(history);
 	}
 
 	private void saveProductionRecord(ResolvedEvent resolvedItem) throws Exception {
@@ -140,7 +140,7 @@ public class EventCollector {
 		history.setAmount(resolvedItem.getQuantity().getAmount());
 		history.setUOM(uom);
 
-		PersistencyService.getInstance().persist(history);
+		PersistencyService.instance().persist(history);
 	}
 
 	protected void onOtherResolution(ResolvedEvent resolvedItem) {
