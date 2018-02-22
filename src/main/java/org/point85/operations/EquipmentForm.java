@@ -2,11 +2,12 @@ package org.point85.operations;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import org.point85.app.AppUtils;
 import org.point85.core.persistence.PersistencyService;
 import org.point85.core.plant.Equipment;
 import org.point85.core.plant.NamedObject;
@@ -29,6 +30,7 @@ import com.vaadin.ui.HorizontalSplitPanel;
 import com.vaadin.ui.IconGenerator;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.Notification;
+import com.vaadin.ui.RadioButtonGroup;
 import com.vaadin.ui.TabSheet;
 import com.vaadin.ui.TabSheet.Tab;
 import com.vaadin.ui.TextField;
@@ -40,13 +42,24 @@ import com.vaadin.ui.themes.ValoTheme;
 
 public class EquipmentForm extends VerticalLayout {
 	private static final long serialVersionUID = 6073934288316949481L;
+	
+	private static final String PROD_GOOD = "Good";
+	private static final String PROD_REJECT = "Reject/Rework";
+	private static final String PROD_TOTAL = "Total";
+	
 
 	private TextField tfReason;
-	private DateTimeField dtfTime;
+	private DateTimeField dtfAvailabilityTime;
 	private Tree<String> entityTree;
 	private TreeGrid<Reason> reasonTreeGrid;
-	
+
+	private RadioButtonGroup<String> productionGroup;
+	private TextField tfAmount;
+	private DateTimeField dtfProductionTime;
+
 	private EventCollector eventCollector = new EventCollector();
+	
+	private ScriptResolverType resolverType;
 
 	public EquipmentForm() {
 
@@ -90,7 +103,7 @@ public class EquipmentForm extends VerticalLayout {
 		tabSheet.setSizeFull();
 		tabSheet.setStyleName(ValoTheme.TABSHEET_FRAMED);
 		Tab eventTab = tabSheet.addTab(createEventPanel());
-		eventTab.setCaption("Event");
+		eventTab.setCaption("Availability");
 		eventTab.setIcon(VaadinIcons.EJECT);
 
 		Tab productionTab = tabSheet.addTab(createProductionLayout());
@@ -119,9 +132,58 @@ public class EquipmentForm extends VerticalLayout {
 	}
 
 	private Component createProductionLayout() {
-		HorizontalLayout productionLayout = new HorizontalLayout();
-		Button press = new Button("Click Me");
-		productionLayout.addComponent(press);
+
+		productionGroup = new RadioButtonGroup<>("Production");
+		productionGroup.setItems(PROD_GOOD, PROD_REJECT, PROD_TOTAL);
+		productionGroup.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
+		productionGroup.setRequiredIndicatorVisible(true);
+		
+		productionGroup.addSelectionListener(event -> {
+			try {
+				Optional<String> item = event.getSelectedItem();
+				
+				setScriptResolverType(item.get());
+			} catch (Exception e) {
+				Notification.show(e.getMessage());
+			}
+		});
+
+		tfAmount = new TextField("Quantity");
+		tfAmount.setIcon(VaadinIcons.REPLY);
+		tfAmount.setRequiredIndicatorVisible(true);
+		
+		TextField tfUOM = new TextField("Unit");
+		tfUOM.setWidth("75px");
+		tfUOM.setEnabled(false);
+		tfUOM.setValue("cans");
+		//Label lbUOM = new Label("Unit");
+		//lbUOM.setWidth("75px");
+
+		dtfProductionTime = new DateTimeField("Production Time");
+		dtfProductionTime.setValue(LocalDateTime.now());
+		dtfProductionTime.setIcon(VaadinIcons.TIME_FORWARD);
+		dtfProductionTime.setRequiredIndicatorVisible(true);
+
+		Button btnExecute = new Button("Record");
+		btnExecute.setStyleName(ValoTheme.BUTTON_PRIMARY);
+		btnExecute.setDescription("Record production event");
+		btnExecute.addClickListener(event -> {
+			try {
+				recordProductionEvent();
+			} catch (Exception e) {
+				Notification.show(e.getMessage());
+			}
+		});
+		
+		HorizontalLayout quantityLayout = new HorizontalLayout();
+		quantityLayout.addComponents(tfAmount, tfUOM);
+
+		FormLayout productionLayout = new FormLayout();
+		productionLayout.setMargin(true);
+		productionLayout.setSizeFull();
+		
+		productionLayout.addComponents(productionGroup, quantityLayout, dtfProductionTime, btnExecute);
+
 		return productionLayout;
 	}
 
@@ -202,60 +264,81 @@ public class EquipmentForm extends VerticalLayout {
 		tfReason.setIcon(VaadinIcons.REPLY);
 		tfReason.setRequiredIndicatorVisible(true);
 
-		dtfTime = new DateTimeField("Event Time");
-		dtfTime.setValue(LocalDateTime.now());
-		dtfTime.setIcon(VaadinIcons.TIME_FORWARD);
-		dtfTime.setRequiredIndicatorVisible(true);
+		dtfAvailabilityTime = new DateTimeField("Event Time");
+		dtfAvailabilityTime.setValue(LocalDateTime.now());
+		dtfAvailabilityTime.setIcon(VaadinIcons.TIME_FORWARD);
+		dtfAvailabilityTime.setRequiredIndicatorVisible(true);
 
 		Button btnExecute = new Button("Record");
 		btnExecute.setStyleName(ValoTheme.BUTTON_PRIMARY);
 		btnExecute.setDescription("Button description");
 		btnExecute.addClickListener(event -> {
 			try {
-				recordEvent();
+				recordAvailabilityEvent();
 			} catch (Exception e) {
 				Notification.show(e.getMessage());
 			}
 		});
 
-		reasonLayout.addComponents(tfReason, dtfTime, btnExecute);
-
-		// HorizontalLayout layout = new HorizontalLayout();
-		// layout.setSizeFull();
-		// layout.addComponent(reasonLayout);
+		reasonLayout.addComponents(tfReason, dtfAvailabilityTime, btnExecute);
 
 		return reasonLayout;
 	}
-	
-	private void recordEvent() throws Exception {
+
+	private Equipment getSelectedEquipment() throws Exception {
 		Set<String> entities = entityTree.getSelectedItems();
-		
+
 		if (entities.size() == 0) {
-			Notification.show("Equipment must be selected in order to record the event.");
-			return;
+			throw new Exception("Equipment must be selected in order to record the event.");
 		}
 		String equipmentName = (String) entities.toArray()[0];
-		
-		NamedObject namedObject = PersistencyService.getInstance().fetchByName(PlantEntity.ENTITY_BY_NAME, equipmentName);
-		
-		if (!(namedObject instanceof Equipment)) {
-			Notification.show("Equipment must be selected in order to record the event.");
-			return;
-		}
-		
-		String reason = tfReason.getValue();
-		
-		if (reason == null || reason.length() == 0) {
-			Notification.show("A reason must be selected.");
-			return;	
-		}
-		
-		// TODO use AppUtils
-		LocalDateTime ldt = dtfTime.getValue();
-		ZoneOffset offset = OffsetDateTime.now().getOffset();
-		
-		eventCollector.resolveEvent(ScriptResolverType.AVAILABILITY, reason, OffsetDateTime.of(ldt, offset));
 
+		NamedObject namedObject = PersistencyService.getInstance().fetchByName(PlantEntity.ENTITY_BY_NAME,
+				equipmentName);
+
+		if (!(namedObject instanceof Equipment)) {
+			throw new Exception("Equipment must be selected in order to record the event.");
+		}
+
+		return (Equipment) namedObject;
+	}
+
+	private void recordAvailabilityEvent() throws Exception {
+		Equipment equipment = getSelectedEquipment();
+
+		String reason = tfReason.getValue();
+
+		if (reason == null || reason.length() == 0) {
+			throw new Exception("A reason must be selected.");
+		}
+
+		OffsetDateTime odt = AppUtils.fromLocalDateTime(dtfAvailabilityTime.getValue());
+
+		eventCollector.resolveEvent(equipment, ScriptResolverType.AVAILABILITY, reason, odt);
+	}
+	
+	private void setScriptResolverType(String type) {
+		resolverType = ScriptResolverType.PROD_GOOD;
+		
+		if (type.equals(PROD_REJECT)) {
+			resolverType = ScriptResolverType.PROD_REJECT;
+		} else if (type.equals(PROD_TOTAL)) {
+			resolverType = ScriptResolverType.PROD_TOTAL;
+		}
+	}
+
+	private void recordProductionEvent() throws Exception {
+		Equipment equipment = getSelectedEquipment();
+		
+		if (resolverType == null) {
+			throw new Exception("A production type must be selected.");
+		}
+		
+		Double amount = Double.valueOf(tfAmount.getValue());
+		
+		OffsetDateTime odt = AppUtils.fromLocalDateTime(dtfProductionTime.getValue());
+
+		eventCollector.resolveEvent(equipment, resolverType, amount, odt);
 	}
 
 	private void populateTopEntityNodes() {

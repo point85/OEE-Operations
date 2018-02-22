@@ -29,19 +29,26 @@ public class EventCollector {
 
 	}
 
-	public void resolveEvent(ScriptResolverType type, Object sourceValue, OffsetDateTime timestamp) throws Exception {
+	public void resolveEvent(Equipment equipment, ScriptResolverType type, Object sourceValue, OffsetDateTime timestamp) throws Exception {
 		EquipmentEventResolver equipmentResolver = new EquipmentEventResolver();
 
 		// find resolver by type
-		List<ScriptResolver> resolvers = equipmentResolver.findResolver(type);
+		List<ScriptResolver> resolvers = equipmentResolver.getResolvers(equipment);
 		
-		if (resolvers.size() != 1) {
-			throw new Exception("No script resolvers found for type " + type + " and source value " + sourceValue);
+		ScriptResolver configuredResolver = null;
+		for (ScriptResolver resolver : resolvers) {
+			if (resolver.getType().equals(type)) {
+				configuredResolver = resolver;
+				break;
+			}
 		}
 		
-		ScriptResolver resolver = resolvers.get(0);
-		ResolvedEvent resolvedDataItem = equipmentResolver.invokeResolver(resolver, appContext, sourceValue,
-				resolver.getSourceId(), timestamp);
+		if (configuredResolver == null) {
+			throw new Exception("No script resolver found for equipment " + equipment.getName() + " and type " + type);
+		}
+		
+		ResolvedEvent resolvedDataItem = equipmentResolver.invokeResolver(configuredResolver, appContext, sourceValue,
+				configuredResolver.getSourceId(), timestamp);
 
 		recordResolution(resolvedDataItem);
 	}
