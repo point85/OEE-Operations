@@ -497,26 +497,36 @@ public class EquipmentForm extends VerticalLayout {
 		Equipment equipment = getSelectedEquipment();
 
 		Material material = equipment.getCurrentMaterial();
+		
+		if (material == null) {
+			throw new Exception("The material being processed must be defined.");
+		}
 
 		// update UOMs
 		EquipmentMaterial eqm = equipment.getEquipmentMaterial(material);
+		
+		if (eqm == null) {
+			throw new Exception("The equipment settings for material " + material.getName() + " have not been defined");
+		}
 
 		UnitOfMeasure uom = null;
 
 		if (type.equals(PROD_GOOD)) {
 			resolverType = ScriptResolverType.PROD_GOOD;
-			uom = (eqm != null) ? eqm.getRunRateUOM() : null;
+			uom = eqm.getRunRateUOM();
 		} else if (type.equals(PROD_REJECT)) {
 			resolverType = ScriptResolverType.PROD_REJECT;
-			uom = (eqm != null) ? eqm.getRejectUOM() : null;
+			uom = eqm.getRejectUOM();
 		} else if (type.equals(PROD_TOTAL)) {
 			resolverType = ScriptResolverType.PROD_TOTAL;
-			uom = (eqm != null) ? eqm.getInputUOM() : null;
+			uom = eqm.getInputUOM();
 		}
 
-		if (uom != null) {
-			lbUOM.setValue(uom.getSymbol());
+		if (uom == null) {
+			throw new Exception("The unit of measure has not been defined for material " + material.getName());
 		}
+		lbUOM.setValue(uom.getSymbol());
+		lbUOM.setData(uom);
 	}
 
 	private void recordProductionEvent() throws Exception {
@@ -537,19 +547,19 @@ public class EquipmentForm extends VerticalLayout {
 		Equipment equipment = getSelectedEquipment();
 
 		OffsetDateTime odt = AppUtils.fromLocalDateTime(dtfSetupTime.getValue());
+		
+		// job
+		String job = tfJob.getValue();
+
+		if (job != null && job.trim().length() > 0) {
+			eventCollector.resolveEvent(equipment, ScriptResolverType.JOB, job, odt);
+		}
 
 		// material
 		String materialId = tfMaterial.getValue();
 
 		if (materialId != null && materialId.trim().length() > 0) {
 			eventCollector.resolveEvent(equipment, ScriptResolverType.MATERIAL, materialId, odt);
-		}
-
-		// job
-		String job = tfJob.getValue();
-
-		if (job != null && job.trim().length() > 0) {
-			eventCollector.resolveEvent(equipment, ScriptResolverType.JOB, job, odt);
 		}
 	}
 

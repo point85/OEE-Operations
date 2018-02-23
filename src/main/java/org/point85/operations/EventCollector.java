@@ -87,11 +87,6 @@ public class EventCollector {
 	}
 
 	private void saveAvailabilityRecord(ResolvedEvent resolvedItem) throws Exception {
-		if (logger.isInfoEnabled()) {
-			logger.info("Availability reason " + resolvedItem.getReason().getName() + ", Loss Category: "
-					+ resolvedItem.getReason().getLossCategory());
-		}
-
 		EventHistory history = new EventHistory(resolvedItem);
 		history.setReason(resolvedItem.getReason());
 
@@ -99,20 +94,12 @@ public class EventCollector {
 	}
 
 	private void saveSetupRecord(ResolvedEvent resolvedItem) throws Exception {
-		if (logger.isInfoEnabled()) {
-			logger.info("Job change " + resolvedItem.getJob());
-		}
-
 		SetupHistory history = new SetupHistory(resolvedItem);
 
 		PersistencyService.instance().persist(history);
 	}
 
 	private void saveProductionRecord(ResolvedEvent resolvedItem) throws Exception {
-		if (logger.isInfoEnabled()) {
-			logger.info("Production " + resolvedItem.getQuantity() + " for type " + resolvedItem.getResolverType());
-		}
-
 		Equipment equipment = resolvedItem.getEquipment();
 		Material material = resolvedItem.getMaterial();
 		UnitOfMeasure uom = null;
