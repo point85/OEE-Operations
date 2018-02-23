@@ -52,28 +52,35 @@ public class EquipmentForm extends VerticalLayout {
 	private static final String PROD_REJECT = "Reject/Rework";
 	private static final String PROD_TOTAL = "Total";
 
+	// availability
+	private Button btnRecordAvailability;
 	private TextField tfReason;
 	private DateTimeField dtfAvailabilityTime;
 	private Tree<EntityNode> entityTree;
 	private TreeGrid<Reason> reasonTreeGrid;
+	private TreeGrid<MaterialCategory> materialTreeGrid;
 
+	// production
+	private Button btnRecordProduction;
 	private RadioButtonGroup<String> productionGroup;
-
 	private TextField tfAmount;
 	private DateTimeField dtfProductionTime;
-
 	private Label lbUOM;
-
 	private Label lbMaterialId;
 	private Label lbMaterialDescription;
 	private Label lbJob;
+
+	// setup/changeover
+	private Button btnRecordSetup;
+	private TextField tfMaterial;
+	private TextField tfJob;
+	private DateTimeField dtfSetupTime;
 
 	private EventCollector eventCollector = new EventCollector();
 
 	private ScriptResolverType resolverType;
 
 	public EquipmentForm() {
-
 		// root content
 		setMargin(true);
 		setSpacing(true);
@@ -91,6 +98,7 @@ public class EquipmentForm extends VerticalLayout {
 
 		populateReasonGrid();
 		populateTopEntityNodes();
+		populateMaterialGrid();
 	}
 
 	private Component createMainPanel() {
@@ -132,7 +140,7 @@ public class EquipmentForm extends VerticalLayout {
 		productionTab.setCaption("Production");
 		productionTab.setIcon(VaadinIcons.PACKAGE);
 
-		Tab jobTab = tabSheet.addTab(createJobLayout());
+		Tab jobTab = tabSheet.addTab(createJobMaterialPanel());
 		jobTab.setCaption("Job/Material");
 		jobTab.setIcon(VaadinIcons.MAILBOX);
 		return tabSheet;
@@ -145,12 +153,27 @@ public class EquipmentForm extends VerticalLayout {
 		eventPanel.setStyleName(ValoTheme.SPLITPANEL_LARGE);
 
 		// event reason
-		eventPanel.addComponent(createReasonPanel());
+		eventPanel.addComponent(createAvailabilityPanel());
 
 		// tree grid of reasons
-		eventPanel.addComponent(createReasonTreePanel());
+		eventPanel.addComponent(createReasonTreeLayout());
 
 		return eventPanel;
+	}
+
+	private Component createJobMaterialPanel() {
+		VerticalSplitPanel materialPanel = new VerticalSplitPanel();
+		materialPanel.setSizeFull();
+		materialPanel.setSplitPosition(40.0f);
+		materialPanel.setStyleName(ValoTheme.SPLITPANEL_LARGE);
+
+		// material and job
+		materialPanel.addComponent(createSetupPanel());
+
+		// tree grid of materials
+		materialPanel.addComponent(createMaterialTreeLayout());
+
+		return materialPanel;
 	}
 
 	private Component createProductionLayout() {
@@ -174,10 +197,6 @@ public class EquipmentForm extends VerticalLayout {
 		tfAmount.setIcon(VaadinIcons.REPLY);
 		tfAmount.setRequiredIndicatorVisible(true);
 
-		/*
-		 * TextField tfUOM = new TextField("Unit"); tfUOM.setWidth("75px");
-		 * tfUOM.setEnabled(false); tfUOM.setValue("cans");
-		 */
 		lbUOM = new Label("Unit");
 		lbUOM.setWidth("75px");
 
@@ -186,10 +205,11 @@ public class EquipmentForm extends VerticalLayout {
 		dtfProductionTime.setIcon(VaadinIcons.TIME_FORWARD);
 		dtfProductionTime.setRequiredIndicatorVisible(true);
 
-		Button btnExecute = new Button("Record");
-		btnExecute.setStyleName(ValoTheme.BUTTON_PRIMARY);
-		btnExecute.setDescription("Record production event");
-		btnExecute.addClickListener(event -> {
+		btnRecordProduction = new Button("Record");
+		btnRecordProduction.setEnabled(false);
+		btnRecordProduction.setStyleName(ValoTheme.BUTTON_PRIMARY);
+		btnRecordProduction.setDescription("Record production event");
+		btnRecordProduction.addClickListener(event -> {
 			try {
 				recordProductionEvent();
 			} catch (Exception e) {
@@ -202,7 +222,6 @@ public class EquipmentForm extends VerticalLayout {
 		lbJob = new Label("Job");
 
 		HorizontalLayout materialLayout = new HorizontalLayout();
-		// materialLayout.setHeight("50px");
 		materialLayout.addComponents(lbMaterialId, lbMaterialDescription, lbJob);
 
 		HorizontalLayout quantityLayout = new HorizontalLayout();
@@ -210,23 +229,11 @@ public class EquipmentForm extends VerticalLayout {
 
 		VerticalLayout productionLayout = new VerticalLayout();
 		productionLayout.setMargin(true);
-		// productionLayout.setSizeFull();
 
-		// FormLayout formLayout = new FormLayout();
-		// formLayout.setSizeFull();
-		// formLayout.addComponents(productionGroup, quantityLayout, dtfProductionTime,
-		// btnExecute);
-
-		productionLayout.addComponents(materialLayout, productionGroup, quantityLayout, dtfProductionTime, btnExecute);
+		productionLayout.addComponents(materialLayout, productionGroup, quantityLayout, dtfProductionTime,
+				btnRecordProduction);
 
 		return productionLayout;
-	}
-
-	private Component createJobLayout() {
-		HorizontalLayout jobLayout = new HorizontalLayout();
-		Button press = new Button("Press Me");
-		jobLayout.addComponent(press);
-		return jobLayout;
 	}
 
 	private Component createEntityTreePanel() {
@@ -316,15 +323,17 @@ public class EquipmentForm extends VerticalLayout {
 		productionGroup.clear();
 	}
 
-	private void clearJobMaterial() {
-
+	private void clearSetup() {
+		tfMaterial.clear();
+		tfJob.clear();
+		dtfSetupTime.setValue(LocalDateTime.now());
 	}
 
 	private void onSelectEntity(EntityNode node) throws Exception {
 		// clear fields
 		clearAvailability();
 		clearProduction();
-		clearJobMaterial();
+		clearSetup();
 
 		Equipment equipment = getSelectedEquipment();
 		String job = equipment.getCurrentJob();
@@ -347,15 +356,20 @@ public class EquipmentForm extends VerticalLayout {
 			lbMaterialDescription.setValue("");
 		}
 
+		btnRecordAvailability.setEnabled(true);
+		btnRecordProduction.setEnabled(true);
+		btnRecordSetup.setEnabled(true);
+
 	}
 
-	private Component createReasonTreePanel() {
+	private Component createReasonTreeLayout() {
 		reasonTreeGrid = new TreeGrid<>();
 		reasonTreeGrid.setCaption("Reasons");
 		reasonTreeGrid.setHeightByRows(6);
 
-		reasonTreeGrid.addExpandListener(event -> System.out.println("Item expanded: " + event.getExpandedItem()));
-		reasonTreeGrid.addCollapseListener(event -> System.out.println("Item collapsed: " + event.getCollapsedItem()));
+		reasonTreeGrid.addExpandListener(event -> System.out.println("Reason expanded: " + event.getExpandedItem()));
+		reasonTreeGrid
+				.addCollapseListener(event -> System.out.println("Reason collapsed: " + event.getCollapsedItem()));
 		reasonTreeGrid.addItemClickListener(event -> tfReason.setValue(event.getItem().getName()));
 
 		HorizontalLayout layout = new HorizontalLayout();
@@ -365,10 +379,27 @@ public class EquipmentForm extends VerticalLayout {
 		return layout;
 	}
 
-	private Component createReasonPanel() {
+	private Component createMaterialTreeLayout() {
+		materialTreeGrid = new TreeGrid<>();
+		materialTreeGrid.setCaption("Material");
+		materialTreeGrid.setHeightByRows(6);
+
+		materialTreeGrid
+				.addExpandListener(event -> System.out.println("Material expanded: " + event.getExpandedItem()));
+		materialTreeGrid
+				.addCollapseListener(event -> System.out.println("Material collapsed: " + event.getCollapsedItem()));
+		materialTreeGrid.addItemClickListener(event -> tfMaterial.setValue(event.getItem().getName()));
+
+		HorizontalLayout layout = new HorizontalLayout();
+		layout.addComponentsAndExpand(materialTreeGrid);
+		layout.setMargin(true);
+
+		return layout;
+	}
+
+	private Component createAvailabilityPanel() {
 		VerticalLayout reasonLayout = new VerticalLayout();
 		reasonLayout.setMargin(true);
-		// reasonLayout.setSizeFull();
 
 		tfReason = new TextField("Reason");
 		tfReason.setIcon(VaadinIcons.REPLY);
@@ -379,10 +410,11 @@ public class EquipmentForm extends VerticalLayout {
 		dtfAvailabilityTime.setIcon(VaadinIcons.TIME_FORWARD);
 		dtfAvailabilityTime.setRequiredIndicatorVisible(true);
 
-		Button btnExecute = new Button("Record");
-		btnExecute.setStyleName(ValoTheme.BUTTON_PRIMARY);
-		btnExecute.setDescription("Button description");
-		btnExecute.addClickListener(event -> {
+		btnRecordAvailability = new Button("Record");
+		btnRecordAvailability.setEnabled(false);
+		btnRecordAvailability.setStyleName(ValoTheme.BUTTON_PRIMARY);
+		btnRecordAvailability.setDescription("Button description");
+		btnRecordAvailability.addClickListener(event -> {
 			try {
 				recordAvailabilityEvent();
 			} catch (Exception e) {
@@ -390,9 +422,42 @@ public class EquipmentForm extends VerticalLayout {
 			}
 		});
 
-		reasonLayout.addComponents(tfReason, dtfAvailabilityTime, btnExecute);
+		reasonLayout.addComponents(tfReason, dtfAvailabilityTime, btnRecordAvailability);
 
 		return reasonLayout;
+	}
+
+	private Component createSetupPanel() {
+		VerticalLayout layout = new VerticalLayout();
+		layout.setMargin(true);
+
+		tfMaterial = new TextField("Material");
+		tfMaterial.setIcon(VaadinIcons.REPLY);
+		tfMaterial.setRequiredIndicatorVisible(true);
+
+		tfJob = new TextField("Job");
+		tfJob.setIcon(VaadinIcons.COFFEE);
+
+		dtfSetupTime = new DateTimeField("Changeover Time");
+		dtfSetupTime.setValue(LocalDateTime.now());
+		dtfSetupTime.setIcon(VaadinIcons.TIME_FORWARD);
+		dtfSetupTime.setRequiredIndicatorVisible(true);
+
+		btnRecordSetup = new Button("Record");
+		btnRecordSetup.setEnabled(false);
+		btnRecordSetup.setStyleName(ValoTheme.BUTTON_PRIMARY);
+		btnRecordSetup.setDescription("Button description");
+		btnRecordSetup.addClickListener(event -> {
+			try {
+				recordChangeoverEvent();
+			} catch (Exception e) {
+				Notification.show(e.getMessage());
+			}
+		});
+
+		layout.addComponents(tfMaterial, tfJob, dtfSetupTime, btnRecordSetup);
+
+		return layout;
 	}
 
 	private Equipment getSelectedEquipment() throws Exception {
@@ -468,6 +533,26 @@ public class EquipmentForm extends VerticalLayout {
 		eventCollector.resolveEvent(equipment, resolverType, amount, odt);
 	}
 
+	private void recordChangeoverEvent() throws Exception {
+		Equipment equipment = getSelectedEquipment();
+
+		OffsetDateTime odt = AppUtils.fromLocalDateTime(dtfSetupTime.getValue());
+
+		// material
+		String materialId = tfMaterial.getValue();
+
+		if (materialId != null && materialId.trim().length() > 0) {
+			eventCollector.resolveEvent(equipment, ScriptResolverType.MATERIAL, materialId, odt);
+		}
+
+		// job
+		String job = tfJob.getValue();
+
+		if (job != null && job.trim().length() > 0) {
+			eventCollector.resolveEvent(equipment, ScriptResolverType.JOB, job, odt);
+		}
+	}
+
 	private void populateTopEntityNodes() {
 
 		// fetch the entities
@@ -504,6 +589,30 @@ public class EquipmentForm extends VerticalLayout {
 		reasonTreeGrid.addColumn(Reason::getLossCategory).setCaption("Loss Category");
 	}
 
+	private void populateMaterialGrid() {
+		List<String> categories = PersistencyService.instance().fetchMaterialCategories();
+
+		List<MaterialCategory> materialCategories = new ArrayList<>();
+		for (String category : categories) {
+			materialCategories.add(new MaterialCategory(category));
+		}
+
+		// Initialize a TreeGrid and set in-memory data
+		materialTreeGrid.setItems(materialCategories, source -> {
+			List<MaterialCategory> materials = new ArrayList<>();
+			try {
+				materials = source.getMaterialsInCategory();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return materials;
+		});
+
+		// The first column gets the hierarchy indicator by default
+		materialTreeGrid.addColumn(MaterialCategory::getName).setCaption("Name");
+		materialTreeGrid.addColumn(MaterialCategory::getDescription).setCaption("Description");
+	}
+
 	private class EntityNode {
 		private PlantEntity entity;
 
@@ -535,4 +644,5 @@ public class EquipmentForm extends VerticalLayout {
 			return text;
 		}
 	}
+
 }
