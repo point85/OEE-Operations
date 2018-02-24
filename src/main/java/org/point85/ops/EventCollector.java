@@ -1,11 +1,13 @@
-package org.point85.operations;
+package org.point85.ops;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.point85.core.collector.EventHistory;
 import org.point85.core.collector.ProductionHistory;
 import org.point85.core.collector.SetupHistory;
+import org.point85.core.messaging.PublisherSubscriber;
 import org.point85.core.persistence.PersistencyService;
 import org.point85.core.plant.Equipment;
 import org.point85.core.plant.EquipmentEventResolver;

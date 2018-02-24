@@ -1,4 +1,4 @@
-package org.point85.operations;
+package org.point85.ops;
 
 import javax.servlet.annotation.WebServlet;
 
@@ -19,7 +19,7 @@ import com.vaadin.ui.themes.ValoTheme;
  * initialize non-component functionality.
  */
 @Theme(ValoTheme.THEME_NAME)
-public class OEEOperations extends UI {
+public class OeeOpsUI extends UI {
 
 	private static final long serialVersionUID = -4803764060046008577L;
 
@@ -33,7 +33,7 @@ public class OEEOperations extends UI {
 	}
 
 	@WebServlet(urlPatterns = "/*", name = "OEEOperationsServlet", asyncSupported = true)
-	@VaadinServletConfiguration(ui = OEEOperations.class, productionMode = false)
+	@VaadinServletConfiguration(ui = OeeOpsUI.class, productionMode = false)
 	public static class OEEOperationsServlet extends VaadinServlet {
 		private static final long serialVersionUID = 3872491814140753200L;
 	}

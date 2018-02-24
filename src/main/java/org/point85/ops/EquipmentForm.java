@@ -1,4 +1,4 @@
-package org.point85.operations;
+package org.point85.ops;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -76,9 +76,10 @@ public class EquipmentForm extends VerticalLayout {
 	private TextField tfJob;
 	private DateTimeField dtfSetupTime;
 
-	private EventCollector eventCollector = new EventCollector();
-
 	private ScriptResolverType resolverType;
+	
+	// event data collector
+	private EventCollector eventCollector = new EventCollector();
 
 	public EquipmentForm() {
 		// root content

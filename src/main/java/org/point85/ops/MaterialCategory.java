@@ -1,4 +1,4 @@
-package org.point85.operations;
+package org.point85.ops;
 
 import java.util.ArrayList;
 import java.util.List;
