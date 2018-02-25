@@ -22,14 +22,25 @@ import com.vaadin.ui.themes.ValoTheme;
 public class OeeOpsUI extends UI {
 
 	private static final long serialVersionUID = -4803764060046008577L;
+	
+	private EquipmentForm eventForm;
 
 	@Override
 	protected void init(VaadinRequest vaadinRequest) {
+		eventForm = new EquipmentForm();
 
-		EquipmentForm eventForm = new EquipmentForm();
-		eventForm.setSizeFull();
-		eventForm.setMargin(true);
-		setContent(eventForm);
+		try {
+			eventForm.setSizeFull();
+			eventForm.setMargin(true);
+			setContent(eventForm);
+
+			eventForm.startupCollector();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			eventForm.getCollectorServer().onException("Startup failed. ", e);
+			eventForm.getCollectorServer().shutdown();
+		} 
 	}
 
 	@WebServlet(urlPatterns = "/*", name = "OEEOperationsServlet", asyncSupported = true)

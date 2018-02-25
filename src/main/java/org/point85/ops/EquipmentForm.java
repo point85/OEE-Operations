@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.point85.app.AppUtils;
+import org.point85.core.collector.CollectorServer;
 import org.point85.core.persistence.PersistencyService;
 import org.point85.core.plant.EntityLevel;
 import org.point85.core.plant.Equipment;
@@ -79,9 +80,10 @@ public class EquipmentForm extends VerticalLayout {
 	private ScriptResolverType resolverType;
 	
 	// event data collector
-	private EventCollector eventCollector = new EventCollector();
+	private CollectorServer collectorServer = new CollectorServer();
 
 	public EquipmentForm() {
+				
 		// root content
 		setMargin(true);
 		setSpacing(true);
@@ -100,6 +102,20 @@ public class EquipmentForm extends VerticalLayout {
 		populateReasonGrid();
 		populateTopEntityNodes();
 		populateMaterialGrid();
+	}
+	
+	CollectorServer getCollectorServer() {
+		return collectorServer;
+	}
+	
+	void startupCollector() throws Exception {
+		// startup server
+		collectorServer.startup();
+	}
+	
+	void shutdownCollector() throws Exception {
+		// shutdown server
+		collectorServer.shutdown();
 	}
 
 	private Component createMainPanel() {
@@ -489,7 +505,7 @@ public class EquipmentForm extends VerticalLayout {
 
 		OffsetDateTime odt = AppUtils.fromLocalDateTime(dtfAvailabilityTime.getValue());
 
-		eventCollector.resolveEvent(equipment, ScriptResolverType.AVAILABILITY, reason, odt);
+		collectorServer.onWebEquipmentEvent(equipment, ScriptResolverType.AVAILABILITY, reason, odt);
 	}
 
 	private void onSelectResolverType(String type) throws Exception {
@@ -541,7 +557,7 @@ public class EquipmentForm extends VerticalLayout {
 
 		OffsetDateTime odt = AppUtils.fromLocalDateTime(dtfProductionTime.getValue());
 
-		eventCollector.resolveEvent(equipment, resolverType, amount, odt);
+		collectorServer.onWebEquipmentEvent(equipment, resolverType, amount, odt);
 	}
 
 	private void recordChangeoverEvent() throws Exception {
@@ -553,14 +569,14 @@ public class EquipmentForm extends VerticalLayout {
 		String job = tfJob.getValue();
 
 		if (job != null && job.trim().length() > 0) {
-			eventCollector.resolveEvent(equipment, ScriptResolverType.JOB, job, odt);
+			collectorServer.onWebEquipmentEvent(equipment, ScriptResolverType.JOB, job, odt);
 		}
 
 		// material
 		String materialId = tfMaterial.getValue();
 
 		if (materialId != null && materialId.trim().length() > 0) {
-			eventCollector.resolveEvent(equipment, ScriptResolverType.MATERIAL, materialId, odt);
+			collectorServer.onWebEquipmentEvent(equipment, ScriptResolverType.MATERIAL, materialId, odt);
 		}
 	}
 
