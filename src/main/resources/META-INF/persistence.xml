@@ -52,7 +52,8 @@
         <properties>
         	<property name="hibernate.dialect" value="org.hibernate.dialect.SQLServer2012Dialect"/>
 			
-         	<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://Kent-Acer:1433;databaseName=JPA"/>
+         	<!-- <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://Kent-Acer:1433;databaseName=JPA"/> -->
+         	<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;databaseName=OEE"/>
          	<property name="javax.persistence.jdbc.user" value="Point85"/>
          	<property name="javax.persistence.jdbc.password" value="Point85"/>
          	<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>

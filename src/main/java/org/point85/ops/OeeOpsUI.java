@@ -2,6 +2,7 @@ package org.point85.ops;
 
 import javax.servlet.annotation.WebServlet;
 
+import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
@@ -18,6 +19,8 @@ import com.vaadin.ui.themes.ValoTheme;
  * intended to be overridden to add component to the user interface and
  * initialize non-component functionality.
  */
+// push UI changes from background threads 
+@Push
 @Theme(ValoTheme.THEME_NAME)
 public class OeeOpsUI extends UI {
 
@@ -26,8 +29,8 @@ public class OeeOpsUI extends UI {
 	private EquipmentForm eventForm;
 
 	@Override
-	protected void init(VaadinRequest vaadinRequest) {
-		eventForm = new EquipmentForm();
+	protected void init(VaadinRequest vaadinRequest) {		
+		eventForm = new EquipmentForm(this);
 
 		try {
 			eventForm.setSizeFull();

@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.point85.app.AppUtils;
+import org.point85.core.collector.CollectorExceptionListener;
 import org.point85.core.collector.CollectorServer;
 import org.point85.core.persistence.PersistencyService;
 import org.point85.core.plant.EntityLevel;
@@ -46,7 +47,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.themes.ValoTheme;
 
-public class EquipmentForm extends VerticalLayout {
+public class EquipmentForm extends VerticalLayout implements CollectorExceptionListener {
 	private static final long serialVersionUID = 6073934288316949481L;
 
 	private static final String PROD_GOOD = "Good";
@@ -78,12 +79,16 @@ public class EquipmentForm extends VerticalLayout {
 	private DateTimeField dtfSetupTime;
 
 	private ScriptResolverType resolverType;
-	
+
 	// event data collector
 	private CollectorServer collectorServer = new CollectorServer();
 
-	public EquipmentForm() {
-				
+	// reference to UI
+	private OeeOpsUI ui;
+
+	public EquipmentForm(OeeOpsUI ui) {
+		this.ui = ui;
+
 		// root content
 		setMargin(true);
 		setSpacing(true);
@@ -103,16 +108,19 @@ public class EquipmentForm extends VerticalLayout {
 		populateTopEntityNodes();
 		populateMaterialGrid();
 	}
-	
+
 	CollectorServer getCollectorServer() {
 		return collectorServer;
 	}
-	
+
 	void startupCollector() throws Exception {
+		// register for exceptions
+		collectorServer.registerExceptionLisener(this);
+
 		// startup server
 		collectorServer.startup();
 	}
-	
+
 	void shutdownCollector() throws Exception {
 		// shutdown server
 		collectorServer.shutdown();
@@ -145,7 +153,7 @@ public class EquipmentForm extends VerticalLayout {
 
 				// onTabSelection(source);
 			} catch (Exception e) {
-				Notification.show(e.getMessage());
+				showException(e);
 			}
 		});
 
@@ -206,7 +214,7 @@ public class EquipmentForm extends VerticalLayout {
 
 				onSelectResolverType(item.get());
 			} catch (Exception e) {
-				Notification.show(e.getMessage());
+				showException(e);
 			}
 		});
 
@@ -230,7 +238,7 @@ public class EquipmentForm extends VerticalLayout {
 			try {
 				recordProductionEvent();
 			} catch (Exception e) {
-				Notification.show(e.getMessage());
+				showException(e);
 			}
 		});
 
@@ -322,7 +330,7 @@ public class EquipmentForm extends VerticalLayout {
 				EntityNode node = event.getFirstSelectedItem().get();
 				onSelectEntity(node);
 			} catch (Exception e) {
-				Notification.show(e.getMessage());
+				showException(e);
 			}
 		});
 
@@ -435,7 +443,7 @@ public class EquipmentForm extends VerticalLayout {
 			try {
 				recordAvailabilityEvent();
 			} catch (Exception e) {
-				Notification.show(e.getMessage());
+				showException(e);
 			}
 		});
 
@@ -468,7 +476,7 @@ public class EquipmentForm extends VerticalLayout {
 			try {
 				recordChangeoverEvent();
 			} catch (Exception e) {
-				Notification.show(e.getMessage());
+				showException(e);
 			}
 		});
 
@@ -514,14 +522,14 @@ public class EquipmentForm extends VerticalLayout {
 		Equipment equipment = getSelectedEquipment();
 
 		Material material = equipment.getCurrentMaterial();
-		
+
 		if (material == null) {
 			throw new Exception("The material being processed must be defined.");
 		}
 
 		// update UOMs
 		EquipmentMaterial eqm = equipment.getEquipmentMaterial(material);
-		
+
 		if (eqm == null) {
 			throw new Exception("The equipment settings for material " + material.getName() + " have not been defined");
 		}
@@ -564,7 +572,7 @@ public class EquipmentForm extends VerticalLayout {
 		Equipment equipment = getSelectedEquipment();
 
 		OffsetDateTime odt = AppUtils.fromLocalDateTime(dtfSetupTime.getValue());
-		
+
 		// job
 		String job = tfJob.getValue();
 
@@ -640,6 +648,23 @@ public class EquipmentForm extends VerticalLayout {
 		materialTreeGrid.addColumn(MaterialCategory::getDescription).setCaption("Description");
 	}
 
+	// callback
+	public void onException(Exception e) {
+		// put on UI thread
+		ui.access(new Runnable() {
+			@Override
+			public void run() {
+				showException(e);
+			}
+		});
+
+	}
+
+	private void showException(Exception e) {
+		Notification.show(e.getMessage(), Notification.Type.ERROR_MESSAGE);
+	}
+
+	/****** A node in the plant entity tree ****/
 	private class EntityNode {
 		private PlantEntity entity;
 
