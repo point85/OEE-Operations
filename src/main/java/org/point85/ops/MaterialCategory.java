@@ -3,8 +3,8 @@ package org.point85.ops;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.point85.core.persistence.PersistencyService;
-import org.point85.core.plant.Material;
+import org.point85.domain.persistence.PersistencyService;
+import org.point85.domain.plant.Material;
 
 public class MaterialCategory {
 	private Material material;

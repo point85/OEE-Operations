@@ -11,17 +11,17 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.point85.app.AppUtils;
-import org.point85.core.collector.CollectorExceptionListener;
-import org.point85.core.collector.CollectorServer;
-import org.point85.core.persistence.PersistencyService;
-import org.point85.core.plant.EntityLevel;
-import org.point85.core.plant.Equipment;
-import org.point85.core.plant.EquipmentMaterial;
-import org.point85.core.plant.Material;
-import org.point85.core.plant.PlantEntity;
-import org.point85.core.plant.Reason;
-import org.point85.core.script.ScriptResolverType;
-import org.point85.core.uom.UnitOfMeasure;
+import org.point85.domain.collector.CollectorExceptionListener;
+import org.point85.domain.collector.CollectorServer;
+import org.point85.domain.persistence.PersistencyService;
+import org.point85.domain.plant.EntityLevel;
+import org.point85.domain.plant.Equipment;
+import org.point85.domain.plant.EquipmentMaterial;
+import org.point85.domain.plant.Material;
+import org.point85.domain.plant.PlantEntity;
+import org.point85.domain.plant.Reason;
+import org.point85.domain.script.ScriptResolverType;
+import org.point85.domain.uom.UnitOfMeasure;
 
 import com.vaadin.data.TreeData;
 import com.vaadin.data.provider.TreeDataProvider;
@@ -81,12 +81,13 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 	private ScriptResolverType resolverType;
 
 	// event data collector
-	private CollectorServer collectorServer = new CollectorServer();
+	private CollectorServer collectorServer;
 
 	// reference to UI
 	private OeeOpsUI ui;
 
 	public EquipmentForm(OeeOpsUI ui) {
+		collectorServer = new CollectorServer();
 		this.ui = ui;
 
 		// root content

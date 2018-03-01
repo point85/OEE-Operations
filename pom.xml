@@ -96,19 +96,19 @@
     <version>0.1.6</version>
 </dependency>		
 		
-		<!-- HIBERNATE JPA -->
+<!-- HIBERNATE JPA -->
 <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
 <dependency>
     <groupId>org.hibernate</groupId>
     <artifactId>hibernate-core</artifactId>
-    <version>5.2.12.Final</version>
+    <version>5.2.14.Final</version>
 </dependency>
 
 <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-c3p0 -->
 <dependency>
     <groupId>org.hibernate</groupId>
     <artifactId>hibernate-c3p0</artifactId>
-    <version>5.2.12.Final</version>
+    <version>5.2.14.Final</version>
 </dependency>
 
 <!-- LOGGING -->
