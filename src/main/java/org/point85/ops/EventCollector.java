@@ -74,7 +74,6 @@ public class EventCollector {
 
 		case PROD_GOOD:
 		case PROD_REJECT:
-		case PROD_TOTAL:
 			saveProductionRecord(resolvedEvent);
 			break;
 
@@ -114,9 +113,6 @@ public class EventCollector {
 					break;
 				case PROD_REJECT:
 					uom = equipmentMaterial.getRejectUOM();
-					break;
-				case PROD_TOTAL:
-					uom = equipmentMaterial.getInputUOM();
 					break;
 				default:
 					break;

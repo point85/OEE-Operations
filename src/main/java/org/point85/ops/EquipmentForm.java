@@ -543,9 +543,6 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 		} else if (type.equals(PROD_REJECT)) {
 			resolverType = ScriptResolverType.PROD_REJECT;
 			uom = eqm.getRejectUOM();
-		} else if (type.equals(PROD_TOTAL)) {
-			resolverType = ScriptResolverType.PROD_TOTAL;
-			uom = eqm.getInputUOM();
 		}
 
 		if (uom == null) {
