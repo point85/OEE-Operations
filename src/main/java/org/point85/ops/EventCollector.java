@@ -6,15 +6,15 @@ import java.util.List;
 import org.point85.domain.collector.EventHistory;
 import org.point85.domain.collector.ProductionHistory;
 import org.point85.domain.collector.SetupHistory;
-import org.point85.domain.persistence.PersistencyService;
+import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.Equipment;
 import org.point85.domain.plant.EquipmentEventResolver;
 import org.point85.domain.plant.EquipmentMaterial;
 import org.point85.domain.plant.Material;
 import org.point85.domain.script.OeeContext;
 import org.point85.domain.script.ResolvedEvent;
-import org.point85.domain.script.ScriptResolver;
-import org.point85.domain.script.ScriptResolverType;
+import org.point85.domain.script.EventResolver;
+import org.point85.domain.script.EventResolverType;
 import org.point85.domain.uom.UnitOfMeasure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,15 +29,15 @@ public class EventCollector {
 
 	}
 
-	public void resolveEvent(Equipment equipment, ScriptResolverType type, Object sourceValue, OffsetDateTime timestamp)
+	public void resolveEvent(Equipment equipment, EventResolverType type, Object sourceValue, OffsetDateTime timestamp)
 			throws Exception {
 		EquipmentEventResolver equipmentResolver = new EquipmentEventResolver();
 
 		// find resolver by type
-		List<ScriptResolver> resolvers = equipmentResolver.getResolvers(equipment);
+		List<EventResolver> resolvers = equipmentResolver.getResolvers(equipment);
 
-		ScriptResolver configuredResolver = null;
-		for (ScriptResolver resolver : resolvers) {
+		EventResolver configuredResolver = null;
+		for (EventResolver resolver : resolvers) {
 			if (resolver.getType().equals(type)) {
 				configuredResolver = resolver;
 				break;
@@ -55,7 +55,7 @@ public class EventCollector {
 	}
 
 	private synchronized void recordResolution(ResolvedEvent resolvedEvent) throws Exception {
-		ScriptResolverType type = resolvedEvent.getResolverType();
+		EventResolverType type = resolvedEvent.getResolverType();
 
 		// first in database
 		switch (type) {
@@ -89,13 +89,13 @@ public class EventCollector {
 		EventHistory history = new EventHistory(resolvedItem);
 		history.setReason(resolvedItem.getReason());
 
-		PersistencyService.instance().persist(history);
+		PersistenceService.instance().persist(history);
 	}
 
 	private void saveSetupRecord(ResolvedEvent resolvedItem) throws Exception {
 		SetupHistory history = new SetupHistory(resolvedItem);
 
-		PersistencyService.instance().persist(history);
+		PersistenceService.instance().persist(history);
 	}
 
 	private void saveProductionRecord(ResolvedEvent resolvedItem) throws Exception {
@@ -124,7 +124,7 @@ public class EventCollector {
 		history.setAmount(resolvedItem.getQuantity().getAmount());
 		history.setUOM(uom);
 
-		PersistencyService.instance().persist(history);
+		PersistenceService.instance().persist(history);
 	}
 
 	protected void onOtherResolution(ResolvedEvent resolvedItem) {

@@ -1,6 +1,13 @@
 package org.point85.ops;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.annotation.WebServlet;
+
+import org.apache.log4j.PropertyConfigurator;
+import org.point85.domain.persistence.PersistenceService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
@@ -19,17 +26,43 @@ import com.vaadin.ui.themes.ValoTheme;
  * intended to be overridden to add component to the user interface and
  * initialize non-component functionality.
  */
-// push UI changes from background threads 
+// push UI changes from background threads
 @Push
 @Theme(ValoTheme.THEME_NAME)
 public class OeeOpsUI extends UI {
 
 	private static final long serialVersionUID = -4803764060046008577L;
-	
+
+	// logger
+	private static final Logger logger = LoggerFactory.getLogger(OeeOpsUI.class);
+
 	private EquipmentForm eventForm;
 
 	@Override
-	protected void init(VaadinRequest vaadinRequest) {		
+	protected void init(VaadinRequest vaadinRequest) {
+		// DESIGNER jdbc:sqlserver://localhost:1433;databaseName=OEE Point85 Point85
+		// log4j.properties
+		ServletContext context = OEEOperationsServlet.getCurrent().getServletContext();
+		String path = context.getContextPath();
+		String realPath = context.getRealPath("");
+
+		ServletConfig config = OEEOperationsServlet.getCurrent().getServletConfig();
+
+		String log4jProps = config.getInitParameter("log4jProps");
+		String jdbcConn = config.getInitParameter("jdbcConn");
+		String userName = config.getInitParameter("userName");
+		String password = config.getInitParameter("password");
+
+		// configure log4j
+		log4jProps = realPath + "/log4j.properties";
+		PropertyConfigurator.configure(log4jProps);
+
+		// create the EMF
+		if (logger.isInfoEnabled()) {
+			logger.info("Initializing persistence service.");
+		}
+		PersistenceService.instance().initialize(jdbcConn, userName, password);
+
 		eventForm = new EquipmentForm(this);
 
 		try {
@@ -43,12 +76,13 @@ public class OeeOpsUI extends UI {
 			e.printStackTrace();
 			eventForm.getCollectorServer().onException("Startup failed. ", e);
 			eventForm.getCollectorServer().shutdown();
-		} 
+		}
 	}
 
 	@WebServlet(urlPatterns = "/*", name = "OEEOperationsServlet", asyncSupported = true)
 	@VaadinServletConfiguration(ui = OeeOpsUI.class, productionMode = false)
 	public static class OEEOperationsServlet extends VaadinServlet {
 		private static final long serialVersionUID = 3872491814140753200L;
+
 	}
 }

@@ -10,17 +10,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.point85.app.AppUtils;
+import org.point85.domain.DomainUtils;
 import org.point85.domain.collector.CollectorExceptionListener;
 import org.point85.domain.collector.CollectorServer;
-import org.point85.domain.persistence.PersistencyService;
+import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.EntityLevel;
 import org.point85.domain.plant.Equipment;
 import org.point85.domain.plant.EquipmentMaterial;
 import org.point85.domain.plant.Material;
 import org.point85.domain.plant.PlantEntity;
 import org.point85.domain.plant.Reason;
-import org.point85.domain.script.ScriptResolverType;
+import org.point85.domain.script.EventResolverType;
 import org.point85.domain.uom.UnitOfMeasure;
 
 import com.vaadin.data.TreeData;
@@ -78,7 +78,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 	private TextField tfJob;
 	private DateTimeField dtfSetupTime;
 
-	private ScriptResolverType resolverType;
+	private EventResolverType resolverType;
 
 	// event data collector
 	private CollectorServer collectorServer;
@@ -512,9 +512,9 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 			throw new Exception("A reason must be selected.");
 		}
 
-		OffsetDateTime odt = AppUtils.fromLocalDateTime(dtfAvailabilityTime.getValue());
+		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfAvailabilityTime.getValue());
 
-		collectorServer.onWebEquipmentEvent(equipment, ScriptResolverType.AVAILABILITY, reason, odt);
+		collectorServer.onWebEquipmentEvent(equipment, EventResolverType.AVAILABILITY, reason, odt);
 	}
 
 	private void onSelectResolverType(String type) throws Exception {
@@ -538,10 +538,10 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 		UnitOfMeasure uom = null;
 
 		if (type.equals(PROD_GOOD)) {
-			resolverType = ScriptResolverType.PROD_GOOD;
+			resolverType = EventResolverType.PROD_GOOD;
 			uom = eqm.getRunRateUOM();
 		} else if (type.equals(PROD_REJECT)) {
-			resolverType = ScriptResolverType.PROD_REJECT;
+			resolverType = EventResolverType.PROD_REJECT;
 			uom = eqm.getRejectUOM();
 		}
 
@@ -561,7 +561,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 
 		Double amount = Double.valueOf(tfAmount.getValue());
 
-		OffsetDateTime odt = AppUtils.fromLocalDateTime(dtfProductionTime.getValue());
+		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfProductionTime.getValue());
 
 		collectorServer.onWebEquipmentEvent(equipment, resolverType, amount, odt);
 	}
@@ -569,27 +569,27 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 	private void recordChangeoverEvent() throws Exception {
 		Equipment equipment = getSelectedEquipment();
 
-		OffsetDateTime odt = AppUtils.fromLocalDateTime(dtfSetupTime.getValue());
+		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfSetupTime.getValue());
 
 		// job
 		String job = tfJob.getValue();
 
 		if (job != null && job.trim().length() > 0) {
-			collectorServer.onWebEquipmentEvent(equipment, ScriptResolverType.JOB, job, odt);
+			collectorServer.onWebEquipmentEvent(equipment, EventResolverType.JOB, job, odt);
 		}
 
 		// material
 		String materialId = tfMaterial.getValue();
 
 		if (materialId != null && materialId.trim().length() > 0) {
-			collectorServer.onWebEquipmentEvent(equipment, ScriptResolverType.MATERIAL, materialId, odt);
+			collectorServer.onWebEquipmentEvent(equipment, EventResolverType.MATERIAL, materialId, odt);
 		}
 	}
 
 	private void populateTopEntityNodes() {
 
 		// fetch the entities
-		List<PlantEntity> entities = PersistencyService.instance().fetchTopPlantEntities();
+		List<PlantEntity> entities = PersistenceService.instance().fetchTopPlantEntities();
 		Collections.sort(entities);
 
 		List<EntityNode> entityNodes = new ArrayList<>();
@@ -611,7 +611,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 	}
 
 	private void populateReasonGrid() {
-		List<Reason> reasons = PersistencyService.instance().fetchTopReasons();
+		List<Reason> reasons = PersistenceService.instance().fetchTopReasons();
 
 		// Initialize a TreeGrid and set in-memory data
 		reasonTreeGrid.setItems(reasons, Reason::getChildren);
@@ -623,7 +623,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 	}
 
 	private void populateMaterialGrid() {
-		List<String> categories = PersistencyService.instance().fetchMaterialCategories();
+		List<String> categories = PersistenceService.instance().fetchMaterialCategories();
 
 		List<MaterialCategory> materialCategories = new ArrayList<>();
 		for (String category : categories) {

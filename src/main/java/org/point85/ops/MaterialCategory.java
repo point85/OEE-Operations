@@ -3,7 +3,7 @@ package org.point85.ops;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.point85.domain.persistence.PersistencyService;
+import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.Material;
 
 public class MaterialCategory {
@@ -27,7 +27,7 @@ public class MaterialCategory {
 	}
 
 	public List<MaterialCategory> getMaterialsInCategory() throws Exception {
-		List<Material> materials = PersistencyService.instance().fetchMaterialsByCategory(materialCategory);
+		List<Material> materials = PersistenceService.instance().fetchMaterialsByCategory(materialCategory);
 
 		List<MaterialCategory> materialCategories = new ArrayList<>();
 		for (Material material : materials) {
