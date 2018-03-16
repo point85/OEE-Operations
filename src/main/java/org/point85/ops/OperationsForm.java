@@ -47,12 +47,11 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.themes.ValoTheme;
 
-public class EquipmentForm extends VerticalLayout implements CollectorExceptionListener {
+public class OperationsForm extends VerticalLayout implements CollectorExceptionListener {
 	private static final long serialVersionUID = 6073934288316949481L;
 
 	private static final String PROD_GOOD = "Good";
 	private static final String PROD_REJECT = "Reject/Rework";
-	private static final String PROD_TOTAL = "Total";
 
 	// availability
 	private Button btnRecordAvailability;
@@ -78,17 +77,20 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 	private TextField tfJob;
 	private DateTimeField dtfSetupTime;
 
+	// type of event resolver
 	private EventResolverType resolverType;
 
 	// event data collector
 	private CollectorServer collectorServer;
 
 	// reference to UI
-	private OeeOpsUI ui;
+	private OperationsUI ui;
 
-	public EquipmentForm(OeeOpsUI ui) {
-		collectorServer = new CollectorServer();
+	public OperationsForm(OperationsUI ui) {
 		this.ui = ui;
+
+		// collector server
+		collectorServer = new CollectorServer();
 
 		// root content
 		setMargin(true);
@@ -105,8 +107,13 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 		// footer
 		addComponent(createFooter());
 
-		populateReasonGrid();
+		// query for the root plant entities
 		populateTopEntityNodes();
+
+		// query for the reasons
+		populateReasonGrid();
+
+		// query for the materials
 		populateMaterialGrid();
 	}
 
@@ -150,9 +157,6 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 
 		tabSheet.addSelectedTabChangeListener(event -> {
 			try {
-				// Object source = event.getSource();
-
-				// onTabSelection(source);
 			} catch (Exception e) {
 				showException(e);
 			}
@@ -160,15 +164,15 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 
 		Tab eventTab = tabSheet.addTab(createEventPanel());
 		eventTab.setCaption("Availability");
-		eventTab.setIcon(VaadinIcons.EJECT);
+		eventTab.setIcon(VaadinIcons.AUTOMATION);
 
 		Tab productionTab = tabSheet.addTab(createProductionLayout());
 		productionTab.setCaption("Production");
-		productionTab.setIcon(VaadinIcons.PACKAGE);
+		productionTab.setIcon(VaadinIcons.STOCK);
 
 		Tab jobTab = tabSheet.addTab(createJobMaterialPanel());
 		jobTab.setCaption("Job/Material");
-		jobTab.setIcon(VaadinIcons.MAILBOX);
+		jobTab.setIcon(VaadinIcons.PACKAGE);
 		return tabSheet;
 	}
 
@@ -205,7 +209,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 	private Component createProductionLayout() {
 
 		productionGroup = new RadioButtonGroup<>("Production");
-		productionGroup.setItems(PROD_GOOD, PROD_REJECT, PROD_TOTAL);
+		productionGroup.setItems(PROD_GOOD, PROD_REJECT);
 		productionGroup.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
 		productionGroup.setRequiredIndicatorVisible(true);
 
@@ -220,7 +224,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 		});
 
 		tfAmount = new TextField("Quantity");
-		tfAmount.setIcon(VaadinIcons.REPLY);
+		tfAmount.setIcon(VaadinIcons.PLAY_CIRCLE_O);
 		tfAmount.setRequiredIndicatorVisible(true);
 
 		lbUOM = new Label("Unit");
@@ -232,6 +236,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 		dtfProductionTime.setRequiredIndicatorVisible(true);
 
 		btnRecordProduction = new Button("Record");
+		btnRecordProduction.setIcon(VaadinIcons.NOTEBOOK);
 		btnRecordProduction.setEnabled(false);
 		btnRecordProduction.setStyleName(ValoTheme.BUTTON_PRIMARY);
 		btnRecordProduction.setDescription("Record production event");
@@ -270,7 +275,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 	}
 
 	private Component createHeader() {
-		Label header = new Label("Point 85 OEE");
+		Label header = new Label("Point 85 Operations");
 		header.addStyleName(ValoTheme.LABEL_COLORED);
 		header.addStyleName(ValoTheme.LABEL_NO_MARGIN);
 		header.addStyleName(ValoTheme.LABEL_BOLD);
@@ -280,7 +285,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 	}
 
 	private Component createFooter() {
-		Label footer = new Label("Point85 LLC");
+		Label footer = new Label("Point85 OEE");
 		footer.addStyleName(ValoTheme.LABEL_COLORED);
 		footer.addStyleName(ValoTheme.LABEL_NO_MARGIN);
 		footer.addStyleName(ValoTheme.LABEL_BOLD);
@@ -301,22 +306,22 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 				PlantEntity entity = entityNode.getEntity();
 				switch (entity.getLevel()) {
 				case AREA:
-					icon = VaadinIcons.AIRPLANE;
+					icon = VaadinIcons.OFFICE;
 					break;
 				case ENTERPRISE:
-					icon = VaadinIcons.HAMMER;
+					icon = VaadinIcons.GLOBE_WIRE;
 					break;
 				case EQUIPMENT:
-					icon = VaadinIcons.BOOK;
+					icon = VaadinIcons.COG;
 					break;
 				case PRODUCTION_LINE:
-					icon = VaadinIcons.WALLET;
+					icon = VaadinIcons.CUBES;
 					break;
 				case SITE:
-					icon = VaadinIcons.CAMERA;
+					icon = VaadinIcons.FACTORY;
 					break;
 				case WORK_CELL:
-					icon = VaadinIcons.DIAMOND;
+					icon = VaadinIcons.COGS;
 					break;
 				default:
 					break;
@@ -428,7 +433,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 		reasonLayout.setMargin(true);
 
 		tfReason = new TextField("Reason");
-		tfReason.setIcon(VaadinIcons.REPLY);
+		tfReason.setIcon(VaadinIcons.PENCIL);
 		tfReason.setRequiredIndicatorVisible(true);
 
 		dtfAvailabilityTime = new DateTimeField("Event Time");
@@ -437,6 +442,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 		dtfAvailabilityTime.setRequiredIndicatorVisible(true);
 
 		btnRecordAvailability = new Button("Record");
+		btnRecordAvailability.setIcon(VaadinIcons.NOTEBOOK);
 		btnRecordAvailability.setEnabled(false);
 		btnRecordAvailability.setStyleName(ValoTheme.BUTTON_PRIMARY);
 		btnRecordAvailability.setDescription("Button description");
@@ -458,11 +464,11 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 		layout.setMargin(true);
 
 		tfMaterial = new TextField("Material");
-		tfMaterial.setIcon(VaadinIcons.REPLY);
+		tfMaterial.setIcon(VaadinIcons.STOCK);
 		tfMaterial.setRequiredIndicatorVisible(true);
 
 		tfJob = new TextField("Job");
-		tfJob.setIcon(VaadinIcons.COFFEE);
+		tfJob.setIcon(VaadinIcons.TAG);
 
 		dtfSetupTime = new DateTimeField("Changeover Time");
 		dtfSetupTime.setValue(LocalDateTime.now());
@@ -470,6 +476,7 @@ public class EquipmentForm extends VerticalLayout implements CollectorExceptionL
 		dtfSetupTime.setRequiredIndicatorVisible(true);
 
 		btnRecordSetup = new Button("Record");
+		btnRecordSetup.setIcon(VaadinIcons.NOTEBOOK);
 		btnRecordSetup.setEnabled(false);
 		btnRecordSetup.setStyleName(ValoTheme.BUTTON_PRIMARY);
 		btnRecordSetup.setDescription("Button description");
