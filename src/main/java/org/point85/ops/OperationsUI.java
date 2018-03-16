@@ -35,7 +35,8 @@ public class OperationsUI extends UI {
 	// logger
 	private static final Logger logger = LoggerFactory.getLogger(OperationsUI.class);
 
-	private OperationsForm operationsForm;
+	// the view
+	private OperationsView operationsView;
 
 	@Override
 	protected void init(VaadinRequest vaadinRequest) {
@@ -59,21 +60,18 @@ public class OperationsUI extends UI {
 
 		// main UI form
 		try {
-			operationsForm = new OperationsForm(this);
-			operationsForm.setSizeFull();
-			operationsForm.setMargin(true);
-			setContent(operationsForm);
+			operationsView = new OperationsView(this);
+			operationsView.setSizeFull();
+			operationsView.setMargin(true);
+			setContent(operationsView);
 
 			// start the data collector
-			operationsForm.startupCollector();
+			operationsView.startupCollector();
 
 		} catch (Exception e) {
 			e.printStackTrace();
-
-			if (operationsForm.getCollectorServer() != null) {
-				operationsForm.getCollectorServer().onException("Startup failed. ", e);
-				operationsForm.getCollectorServer().shutdown();
-			}
+			operationsView.onException(e);
+			operationsView.shutdownCollector();
 		}
 	}
 

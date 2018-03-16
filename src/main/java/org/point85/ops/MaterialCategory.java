@@ -25,6 +25,10 @@ public class MaterialCategory {
 	public String getDescription() {
 		return (material != null) ? material.getDescription() : "Category";
 	}
+	
+	public Material getMaterial() {
+		return material;
+	}
 
 	public List<MaterialCategory> getMaterialsInCategory() throws Exception {
 		List<Material> materials = PersistenceService.instance().fetchMaterialsByCategory(materialCategory);

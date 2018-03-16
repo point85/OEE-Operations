@@ -3,7 +3,7 @@ package org.point85.ops;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import org.point85.domain.collector.EventHistory;
+import org.point85.domain.collector.AvailabilityHistory;
 import org.point85.domain.collector.ProductionHistory;
 import org.point85.domain.collector.SetupHistory;
 import org.point85.domain.persistence.PersistenceService;
@@ -86,7 +86,7 @@ public class EventCollector {
 	}
 
 	private void saveAvailabilityRecord(ResolvedEvent resolvedItem) throws Exception {
-		EventHistory history = new EventHistory(resolvedItem);
+		AvailabilityHistory history = new AvailabilityHistory(resolvedItem);
 		history.setReason(resolvedItem.getReason());
 
 		PersistenceService.instance().persist(history);

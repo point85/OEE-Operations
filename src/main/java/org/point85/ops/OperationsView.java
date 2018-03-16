@@ -1,19 +1,13 @@
 package org.point85.ops;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.point85.domain.DomainUtils;
-import org.point85.domain.collector.CollectorExceptionListener;
-import org.point85.domain.collector.CollectorServer;
-import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.EntityLevel;
 import org.point85.domain.plant.Equipment;
 import org.point85.domain.plant.EquipmentMaterial;
@@ -23,8 +17,6 @@ import org.point85.domain.plant.Reason;
 import org.point85.domain.script.EventResolverType;
 import org.point85.domain.uom.UnitOfMeasure;
 
-import com.vaadin.data.TreeData;
-import com.vaadin.data.provider.TreeDataProvider;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.Resource;
 import com.vaadin.ui.Alignment;
@@ -47,7 +39,7 @@ import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.VerticalSplitPanel;
 import com.vaadin.ui.themes.ValoTheme;
 
-public class OperationsForm extends VerticalLayout implements CollectorExceptionListener {
+public class OperationsView extends VerticalLayout {
 	private static final long serialVersionUID = 6073934288316949481L;
 
 	private static final String PROD_GOOD = "Good";
@@ -77,20 +69,17 @@ public class OperationsForm extends VerticalLayout implements CollectorException
 	private TextField tfJob;
 	private DateTimeField dtfSetupTime;
 
-	// type of event resolver
-	private EventResolverType resolverType;
-
-	// event data collector
-	private CollectorServer collectorServer;
+	private OperationsPresenter operationsPresenter;
 
 	// reference to UI
 	private OperationsUI ui;
 
-	public OperationsForm(OperationsUI ui) {
+	public OperationsView(OperationsUI ui) {
+		// the UI
 		this.ui = ui;
 
-		// collector server
-		collectorServer = new CollectorServer();
+		// presenter
+		operationsPresenter = new OperationsPresenter(this);
 
 		// root content
 		setMargin(true);
@@ -108,30 +97,13 @@ public class OperationsForm extends VerticalLayout implements CollectorException
 		addComponent(createFooter());
 
 		// query for the root plant entities
-		populateTopEntityNodes();
+		operationsPresenter.populateTopEntityNodes(entityTree);
 
 		// query for the reasons
-		populateReasonGrid();
+		operationsPresenter.populateReasonGrid(reasonTreeGrid);
 
 		// query for the materials
-		populateMaterialGrid();
-	}
-
-	CollectorServer getCollectorServer() {
-		return collectorServer;
-	}
-
-	void startupCollector() throws Exception {
-		// register for exceptions
-		collectorServer.registerExceptionLisener(this);
-
-		// startup server
-		collectorServer.startup();
-	}
-
-	void shutdownCollector() throws Exception {
-		// shutdown server
-		collectorServer.shutdown();
+		operationsPresenter.populateMaterialGrid(materialTreeGrid);
 	}
 
 	private Component createMainPanel() {
@@ -398,10 +370,21 @@ public class OperationsForm extends VerticalLayout implements CollectorException
 		reasonTreeGrid.setCaption("Reasons");
 		reasonTreeGrid.setHeightByRows(6);
 
+		reasonTreeGrid.addColumn(Reason::getName).setCaption("Name");
+		reasonTreeGrid.addColumn(Reason::getDescription).setCaption("Description");
+		reasonTreeGrid.addColumn(Reason::getLossCategory).setCaption("Loss Category");
+
+		/*
 		reasonTreeGrid.addExpandListener(event -> System.out.println("Reason expanded: " + event.getExpandedItem()));
 		reasonTreeGrid
 				.addCollapseListener(event -> System.out.println("Reason collapsed: " + event.getCollapsedItem()));
-		reasonTreeGrid.addItemClickListener(event -> tfReason.setValue(event.getItem().getName()));
+				*/
+
+		reasonTreeGrid.addItemClickListener(event -> {
+			Reason reason = event.getItem();
+			tfReason.setValue(reason.getName());
+			tfReason.setData(reason);
+		});
 
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.addComponentsAndExpand(reasonTreeGrid);
@@ -415,11 +398,20 @@ public class OperationsForm extends VerticalLayout implements CollectorException
 		materialTreeGrid.setCaption("Material");
 		materialTreeGrid.setHeightByRows(6);
 
+		materialTreeGrid.addColumn(MaterialCategory::getName).setCaption("Name");
+		materialTreeGrid.addColumn(MaterialCategory::getDescription).setCaption("Description");
+
+		/*
 		materialTreeGrid
 				.addExpandListener(event -> System.out.println("Material expanded: " + event.getExpandedItem()));
 		materialTreeGrid
 				.addCollapseListener(event -> System.out.println("Material collapsed: " + event.getCollapsedItem()));
-		materialTreeGrid.addItemClickListener(event -> tfMaterial.setValue(event.getItem().getName()));
+				*/
+		materialTreeGrid.addItemClickListener(event -> {
+			Material material = event.getItem().getMaterial();
+			tfMaterial.setValue(material.getName());
+			tfMaterial.setData(material);
+		});
 
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.addComponentsAndExpand(materialTreeGrid);
@@ -493,7 +485,7 @@ public class OperationsForm extends VerticalLayout implements CollectorException
 		return layout;
 	}
 
-	private Equipment getSelectedEquipment() throws Exception {
+	Equipment getSelectedEquipment() throws Exception {
 		Set<EntityNode> entityNodes = entityTree.getSelectedItems();
 
 		if (entityNodes.size() == 0) {
@@ -510,18 +502,56 @@ public class OperationsForm extends VerticalLayout implements CollectorException
 		return (Equipment) entity;
 	}
 
+	private void recordProductionEvent() throws Exception {
+		Equipment equipment = getSelectedEquipment();
+		Double amount = Double.valueOf(tfAmount.getValue());
+		Material material = (Material)tfMaterial.getData();
+		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfProductionTime.getValue());
+		operationsPresenter.recordProductionEvent(equipment, amount, material, odt);
+	}
+
+	private void recordChangeoverEvent() throws Exception {
+		Equipment equipment = getSelectedEquipment();
+		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfSetupTime.getValue());
+
+		// job
+		String job = tfJob.getValue();
+
+		// material
+		Material material = (Material)tfMaterial.getData();
+
+		operationsPresenter.recordChangeoverEvent(equipment, job, material, odt);
+	}
+
 	private void recordAvailabilityEvent() throws Exception {
 		Equipment equipment = getSelectedEquipment();
 
 		String reason = tfReason.getValue();
 
-		if (reason == null || reason.length() == 0) {
+		if (reason == null || reason.length() == 0 || tfReason.getData() == null) {
 			throw new Exception("A reason must be selected.");
 		}
 
 		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfAvailabilityTime.getValue());
 
-		collectorServer.onWebEquipmentEvent(equipment, EventResolverType.AVAILABILITY, reason, odt);
+		operationsPresenter.recordAvailabilityEvent(equipment, (Reason) tfReason.getData(), odt);
+	}
+
+	private void recordAvailabilitySummary() throws Exception {
+		Equipment equipment = getSelectedEquipment();
+
+		String reason = tfReason.getValue();
+
+		if (reason == null || reason.length() == 0 || tfReason.getData() == null) {
+			throw new Exception("A reason must be selected.");
+		}
+
+		OffsetDateTime startTime = DomainUtils.fromLocalDateTime(dtfAvailabilityTime.getValue());
+		OffsetDateTime endTime = DomainUtils.fromLocalDateTime(dtfAvailabilityTime.getValue());
+		Duration duration = Duration.ofSeconds(600);
+
+		operationsPresenter.recordAvailabilitySummary(equipment, (Reason) tfReason.getData(), startTime, endTime,
+				duration);
 	}
 
 	private void onSelectResolverType(String type) throws Exception {
@@ -544,6 +574,7 @@ public class OperationsForm extends VerticalLayout implements CollectorException
 
 		UnitOfMeasure uom = null;
 
+		EventResolverType resolverType = null;
 		if (type.equals(PROD_GOOD)) {
 			resolverType = EventResolverType.PROD_GOOD;
 			uom = eqm.getRunRateUOM();
@@ -551,6 +582,7 @@ public class OperationsForm extends VerticalLayout implements CollectorException
 			resolverType = EventResolverType.PROD_REJECT;
 			uom = eqm.getRejectUOM();
 		}
+		operationsPresenter.setResolverType(resolverType);
 
 		if (uom == null) {
 			throw new Exception("The unit of measure has not been defined for material " + material.getName());
@@ -559,102 +591,8 @@ public class OperationsForm extends VerticalLayout implements CollectorException
 		lbUOM.setData(uom);
 	}
 
-	private void recordProductionEvent() throws Exception {
-		Equipment equipment = getSelectedEquipment();
-
-		if (resolverType == null) {
-			throw new Exception("A production type must be selected.");
-		}
-
-		Double amount = Double.valueOf(tfAmount.getValue());
-
-		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfProductionTime.getValue());
-
-		collectorServer.onWebEquipmentEvent(equipment, resolverType, amount, odt);
-	}
-
-	private void recordChangeoverEvent() throws Exception {
-		Equipment equipment = getSelectedEquipment();
-
-		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfSetupTime.getValue());
-
-		// job
-		String job = tfJob.getValue();
-
-		if (job != null && job.trim().length() > 0) {
-			collectorServer.onWebEquipmentEvent(equipment, EventResolverType.JOB, job, odt);
-		}
-
-		// material
-		String materialId = tfMaterial.getValue();
-
-		if (materialId != null && materialId.trim().length() > 0) {
-			collectorServer.onWebEquipmentEvent(equipment, EventResolverType.MATERIAL, materialId, odt);
-		}
-	}
-
-	private void populateTopEntityNodes() {
-
-		// fetch the entities
-		List<PlantEntity> entities = PersistenceService.instance().fetchTopPlantEntities();
-		Collections.sort(entities);
-
-		List<EntityNode> entityNodes = new ArrayList<>();
-
-		for (PlantEntity entity : entities) {
-			entityNodes.add(new EntityNode(entity));
-		}
-
-		// An initial entity tree
-		TreeData<EntityNode> treeData = new TreeData<>();
-
-		// add the roots
-		treeData.addItems(null, entityNodes);
-
-		entityNodes.forEach(entityNode -> treeData.addItems(entityNode, entityNode.getChildren()));
-
-		TreeDataProvider<EntityNode> dataProvider = new TreeDataProvider<>(treeData);
-		entityTree.setDataProvider(dataProvider);
-	}
-
-	private void populateReasonGrid() {
-		List<Reason> reasons = PersistenceService.instance().fetchTopReasons();
-
-		// Initialize a TreeGrid and set in-memory data
-		reasonTreeGrid.setItems(reasons, Reason::getChildren);
-
-		// The first column gets the hierarchy indicator by default
-		reasonTreeGrid.addColumn(Reason::getName).setCaption("Name");
-		reasonTreeGrid.addColumn(Reason::getDescription).setCaption("Description");
-		reasonTreeGrid.addColumn(Reason::getLossCategory).setCaption("Loss Category");
-	}
-
-	private void populateMaterialGrid() {
-		List<String> categories = PersistenceService.instance().fetchMaterialCategories();
-
-		List<MaterialCategory> materialCategories = new ArrayList<>();
-		for (String category : categories) {
-			materialCategories.add(new MaterialCategory(category));
-		}
-
-		// Initialize a TreeGrid and set in-memory data
-		materialTreeGrid.setItems(materialCategories, source -> {
-			List<MaterialCategory> materials = new ArrayList<>();
-			try {
-				materials = source.getMaterialsInCategory();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return materials;
-		});
-
-		// The first column gets the hierarchy indicator by default
-		materialTreeGrid.addColumn(MaterialCategory::getName).setCaption("Name");
-		materialTreeGrid.addColumn(MaterialCategory::getDescription).setCaption("Description");
-	}
-
 	// callback
-	public void onException(Exception e) {
+	void onException(Exception e) {
 		// put on UI thread
 		ui.access(new Runnable() {
 			@Override
@@ -669,36 +607,15 @@ public class OperationsForm extends VerticalLayout implements CollectorException
 		Notification.show(e.getMessage(), Notification.Type.ERROR_MESSAGE);
 	}
 
-	/****** A node in the plant entity tree ****/
-	private class EntityNode {
-		private PlantEntity entity;
+	void startupCollector() throws Exception {
+		operationsPresenter.startupCollector();
+	}
 
-		private EntityNode(PlantEntity entity) {
-			this.entity = entity;
-		}
-
-		private PlantEntity getEntity() {
-			return entity;
-		}
-
-		private Set<EntityNode> getChildren() {
-			Set<EntityNode> children = new HashSet<>();
-
-			for (PlantEntity childEntity : entity.getChildren()) {
-				children.add(new EntityNode(childEntity));
-			}
-			return children;
-		}
-
-		@Override
-		public String toString() {
-			String text = "";
-
-			if (entity != null) {
-				text = entity.getName() + " (" + entity.getDescription() + ")";
-			}
-
-			return text;
+	void shutdownCollector() {
+		try {
+			operationsPresenter.shutdownCollector();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
