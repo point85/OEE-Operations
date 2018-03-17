@@ -376,13 +376,14 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private void clearProduction() {
-		groupProductionType.clear();
+		// groupProductionType.clear();
 		tfAmount.clear();
 		tfAmount.setEnabled(false);
 	}
 
 	private void clearSetup() {
 		tfMaterial.clear();
+		tfMaterial.setData(null);
 		tfJob.clear();
 	}
 
@@ -407,9 +408,11 @@ public class OperationsView extends VerticalLayout {
 
 		if (material != null) {
 			lbMaterialId.setValue(material.getName());
+			lbMaterialId.setData(material);
 			lbMaterialDescription.setValue(material.getDescription());
 		} else {
 			lbMaterialId.setValue("");
+			lbMaterialId.setData(null);
 			lbMaterialDescription.setValue("");
 		}
 
@@ -450,9 +453,13 @@ public class OperationsView extends VerticalLayout {
 		treeGridMaterial.addColumn(MaterialCategory::getDescription).setCaption("Description");
 
 		treeGridMaterial.addItemClickListener(event -> {
-			Material material = event.getItem().getMaterial();
-			tfMaterial.setValue(material.getName());
-			tfMaterial.setData(material);
+			MaterialCategory materialCategory = event.getItem();
+
+			if (materialCategory.getMaterial() != null) {
+				Material material = materialCategory.getMaterial();
+				tfMaterial.setValue(material.getName());
+				tfMaterial.setData(material);
+			}
 		});
 
 		HorizontalLayout layout = new HorizontalLayout();
@@ -555,6 +562,7 @@ public class OperationsView extends VerticalLayout {
 		btnRecordSetup.addClickListener(event -> {
 			try {
 				recordChangeoverEvent();
+				clearSetup();
 			} catch (Exception e) {
 				showException(e);
 			}
@@ -585,7 +593,7 @@ public class OperationsView extends VerticalLayout {
 	private void recordProductionEvent() throws Exception {
 		Equipment equipment = getSelectedEquipment();
 		Double amount = Double.valueOf(tfAmount.getValue());
-		Material material = (Material) tfMaterial.getData();
+		Material material = (Material) lbMaterialId.getData();
 		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfProductionTime1.getValue());
 		operationsPresenter.recordProductionEvent(equipment, amount, material, odt);
 	}
@@ -600,7 +608,7 @@ public class OperationsView extends VerticalLayout {
 			throw new Exception("An amount must be specified.");
 		}
 
-		Material material = (Material) tfMaterial.getData();
+		Material material = (Material) lbMaterialId.getData();
 
 		OffsetDateTime startTime = DomainUtils.fromLocalDateTime(dtfProductionTime1.getValue());
 		OffsetDateTime endTime = DomainUtils.fromLocalDateTime(dtfProductionTime2.getValue());
@@ -619,6 +627,10 @@ public class OperationsView extends VerticalLayout {
 
 		// material
 		Material material = (Material) tfMaterial.getData();
+
+		if (job.trim().length() == 0 && material == null) {
+			throw new Exception("Material and/or a job must be specified.");
+		}
 
 		operationsPresenter.recordChangeoverEvent(equipment, job, material, odt);
 	}
