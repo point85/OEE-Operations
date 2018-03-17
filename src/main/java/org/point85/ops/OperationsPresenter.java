@@ -147,7 +147,7 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		collectorServer.saveProductionHistory(event);
 	}
 
-	void recordProductionSummary(Equipment equipment, Double amount, Material material, OffsetDateTime startTime,
+	void recordProductionSummary(Equipment equipment, Quantity quantity, Material material, OffsetDateTime startTime,
 			OffsetDateTime endTime) throws Exception {
 		if (resolverType == null) {
 			throw new Exception("A production type must be selected.");
@@ -158,9 +158,7 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		lossSummary.setMaterial(material);
 		lossSummary.setStartTime(startTime);
 		lossSummary.setEndTime(endTime);
-
-		UnitOfMeasure uom = null;
-		Quantity quantity = new Quantity(amount, uom);
+		lossSummary.setResolverType(resolverType);
 		lossSummary.setQuantity(quantity);
 
 		ProductionSummary summary = new ProductionSummary(lossSummary);

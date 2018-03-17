@@ -9,12 +9,11 @@ import org.point85.domain.collector.SetupHistory;
 import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.Equipment;
 import org.point85.domain.plant.EquipmentEventResolver;
-import org.point85.domain.plant.EquipmentMaterial;
 import org.point85.domain.plant.Material;
-import org.point85.domain.script.OeeContext;
-import org.point85.domain.script.ResolvedEvent;
 import org.point85.domain.script.EventResolver;
 import org.point85.domain.script.EventResolverType;
+import org.point85.domain.script.OeeContext;
+import org.point85.domain.script.ResolvedEvent;
 import org.point85.domain.uom.UnitOfMeasure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,15 +73,13 @@ public class EventCollector {
 
 		case PROD_GOOD:
 		case PROD_REJECT:
+		case PROD_STARTUP:
 			saveProductionRecord(resolvedEvent);
 			break;
 
 		default:
 			break;
 		}
-
-		// send event message
-		// sendResolutionMessage(resolvedEvent);
 	}
 
 	private void saveAvailabilityRecord(ResolvedEvent resolvedItem) throws Exception {
@@ -101,24 +98,8 @@ public class EventCollector {
 	private void saveProductionRecord(ResolvedEvent resolvedItem) throws Exception {
 		Equipment equipment = resolvedItem.getEquipment();
 		Material material = resolvedItem.getMaterial();
-		UnitOfMeasure uom = null;
+		UnitOfMeasure uom = equipment.getUOM(material, resolvedItem.getResolverType());
 
-		if (material != null) {
-			EquipmentMaterial equipmentMaterial = equipment.getEquipmentMaterial(material);
-
-			if (equipmentMaterial != null) {
-				switch (resolvedItem.getResolverType()) {
-				case PROD_GOOD:
-					uom = equipmentMaterial.getRunRateUOM();
-					break;
-				case PROD_REJECT:
-					uom = equipmentMaterial.getRejectUOM();
-					break;
-				default:
-					break;
-				}
-			}
-		}
 		ProductionHistory history = new ProductionHistory(resolvedItem);
 		history.setType(resolvedItem.getResolverType());
 		history.setAmount(resolvedItem.getQuantity().getAmount());

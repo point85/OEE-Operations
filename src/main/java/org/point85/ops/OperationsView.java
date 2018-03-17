@@ -15,6 +15,7 @@ import org.point85.domain.plant.Material;
 import org.point85.domain.plant.PlantEntity;
 import org.point85.domain.plant.Reason;
 import org.point85.domain.script.EventResolverType;
+import org.point85.domain.uom.Quantity;
 import org.point85.domain.uom.UnitOfMeasure;
 
 import com.vaadin.icons.VaadinIcons;
@@ -53,7 +54,8 @@ public class OperationsView extends VerticalLayout {
 
 	// good or reject production
 	private static final String PROD_GOOD = "Good";
-	private static final String PROD_REJECT = "Reject/Rework";
+	private static final String PROD_REJECT = "Reject and Rework";
+	private static final String PROD_STARTUP = "Startup and Yield";
 
 	// availability
 	private RadioButtonGroup<String> groupAvailabilitySummary;
@@ -124,7 +126,7 @@ public class OperationsView extends VerticalLayout {
 
 		// summary availability
 		groupAvailabilitySummary.setSelectedItem(SUMMARIZED);
-		
+
 		// summary production
 		groupProductionSummary.setSelectedItem(SUMMARIZED);
 	}
@@ -218,7 +220,7 @@ public class OperationsView extends VerticalLayout {
 		});
 
 		groupProductionType = new RadioButtonGroup<>("Production Type");
-		groupProductionType.setItems(PROD_GOOD, PROD_REJECT);
+		groupProductionType.setItems(PROD_GOOD, PROD_REJECT, PROD_STARTUP);
 		groupProductionType.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
 		groupProductionType.setRequiredIndicatorVisible(true);
 
@@ -603,7 +605,9 @@ public class OperationsView extends VerticalLayout {
 		OffsetDateTime startTime = DomainUtils.fromLocalDateTime(dtfProductionTime1.getValue());
 		OffsetDateTime endTime = DomainUtils.fromLocalDateTime(dtfProductionTime2.getValue());
 
-		operationsPresenter.recordProductionSummary(equipment, amount, material, startTime, endTime);
+		Quantity quantity = new Quantity(amount, (UnitOfMeasure) lbUOM.getData());
+
+		operationsPresenter.recordProductionSummary(equipment, quantity, material, startTime, endTime);
 	}
 
 	private void recordChangeoverEvent() throws Exception {
@@ -703,24 +707,24 @@ public class OperationsView extends VerticalLayout {
 			throw new Exception("The equipment settings for material " + material.getName() + " have not been defined");
 		}
 
-		UnitOfMeasure uom = null;
-
 		EventResolverType resolverType = null;
 		if (type.equals(PROD_GOOD)) {
 			resolverType = EventResolverType.PROD_GOOD;
-			uom = eqm.getRunRateUOM();
 		} else if (type.equals(PROD_REJECT)) {
 			resolverType = EventResolverType.PROD_REJECT;
-			uom = eqm.getRejectUOM();
+		} else if (type.equals(PROD_STARTUP)) {
+			resolverType = EventResolverType.PROD_STARTUP;
 		}
+
 		operationsPresenter.setResolverType(resolverType);
 
+		UnitOfMeasure uom = equipment.getUOM(material, resolverType);
 		if (uom == null) {
 			throw new Exception("The unit of measure has not been defined for material " + material.getName());
 		}
 		lbUOM.setValue(uom.getSymbol());
 		lbUOM.setData(uom);
-		
+
 		tfAmount.setEnabled(true);
 	}
 
