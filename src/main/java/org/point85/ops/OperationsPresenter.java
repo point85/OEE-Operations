@@ -124,13 +124,6 @@ public class OperationsPresenter implements CollectorExceptionListener {
 			}
 			return materials;
 		});
-
-		// The first column gets the hierarchy indicator by default
-		/*
-		 * materialTreeGrid.addColumn(MaterialCategory::getName).setCaption("Name");
-		 * materialTreeGrid.addColumn(MaterialCategory::getDescription).setCaption(
-		 * "Description");
-		 */
 	}
 
 	// callback
@@ -155,7 +148,7 @@ public class OperationsPresenter implements CollectorExceptionListener {
 	}
 
 	void recordProductionSummary(Equipment equipment, Double amount, Material material, OffsetDateTime startTime,
-			OffsetDateTime endTime, Duration duration) throws Exception {
+			OffsetDateTime endTime) throws Exception {
 		if (resolverType == null) {
 			throw new Exception("A production type must be selected.");
 		}

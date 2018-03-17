@@ -42,9 +42,11 @@ import com.vaadin.ui.themes.ValoTheme;
 public class OperationsView extends VerticalLayout {
 	private static final long serialVersionUID = 6073934288316949481L;
 
-	// availability data
-	private static final String AVAIL_EVENT = "By Event";
-	private static final String AVAIL_SUMMARY = "Summarized";
+	private static final String HOURS = "Hours";
+	private static final String MINUTES = "Minutes";
+
+	private static final String BY_EVENT = "By Event";
+	private static final String SUMMARIZED = "Summarized";
 	private static final String EVENT_TIME = "Event Time";
 	private static final String FROM_TIME = "From Time";
 	private static final String TO_TIME = "To Time";
@@ -54,22 +56,24 @@ public class OperationsView extends VerticalLayout {
 	private static final String PROD_REJECT = "Reject/Rework";
 
 	// availability
-	private RadioButtonGroup<String> groupAvailability;
+	private RadioButtonGroup<String> groupAvailabilitySummary;
 	private Button btnRecordAvailability;
 	private TextField tfReason;
 	private DateTimeField dtfAvailabilityTime1;
 	private DateTimeField dtfAvailabilityTime2;
-	private TextField tfHours;
-	private TextField tfMinutes;
+	private TextField tfAvailabilityHours;
+	private TextField tfAvailabilityMinutes;
 	private Tree<EntityNode> treeEntity;
 	private TreeGrid<Reason> treeGridReason;
 	private TreeGrid<MaterialCategory> treeGridMaterial;
 
 	// production
+	private RadioButtonGroup<String> groupProductionSummary;
 	private Button btnRecordProduction;
-	private RadioButtonGroup<String> groupProduction;
+	private RadioButtonGroup<String> groupProductionType;
 	private TextField tfAmount;
-	private DateTimeField dtfProductionTime;
+	private DateTimeField dtfProductionTime1;
+	private DateTimeField dtfProductionTime2;
 	private Label lbUOM;
 	private Label lbMaterialId;
 	private Label lbMaterialDescription;
@@ -119,7 +123,10 @@ public class OperationsView extends VerticalLayout {
 		operationsPresenter.populateMaterialGrid(treeGridMaterial);
 
 		// summary availability
-		groupAvailability.setSelectedItem(AVAIL_SUMMARY);
+		groupAvailabilitySummary.setSelectedItem(SUMMARIZED);
+		
+		// summary production
+		groupProductionSummary.setSelectedItem(SUMMARIZED);
 	}
 
 	private Component createMainPanel() {
@@ -195,13 +202,27 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private Component createProductionLayout() {
+		groupProductionSummary = new RadioButtonGroup<>("Production");
+		groupProductionSummary.setItems(BY_EVENT, SUMMARIZED);
+		groupProductionSummary.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
+		groupProductionSummary.setRequiredIndicatorVisible(true);
 
-		groupProduction = new RadioButtonGroup<>("Production");
-		groupProduction.setItems(PROD_GOOD, PROD_REJECT);
-		groupProduction.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
-		groupProduction.setRequiredIndicatorVisible(true);
+		groupProductionSummary.addSelectionListener(event -> {
+			try {
+				Optional<String> item = event.getSelectedItem();
 
-		groupProduction.addSelectionListener(event -> {
+				onSelectProductionData(item.get());
+			} catch (Exception e) {
+				showException(e);
+			}
+		});
+
+		groupProductionType = new RadioButtonGroup<>("Production Type");
+		groupProductionType.setItems(PROD_GOOD, PROD_REJECT);
+		groupProductionType.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
+		groupProductionType.setRequiredIndicatorVisible(true);
+
+		groupProductionType.addSelectionListener(event -> {
 			try {
 				Optional<String> item = event.getSelectedItem();
 
@@ -214,14 +235,20 @@ public class OperationsView extends VerticalLayout {
 		tfAmount = new TextField("Quantity");
 		tfAmount.setIcon(VaadinIcons.PLAY_CIRCLE_O);
 		tfAmount.setRequiredIndicatorVisible(true);
+		tfAmount.setEnabled(false);
 
 		lbUOM = new Label("Unit");
 		lbUOM.setWidth("75px");
 
-		dtfProductionTime = new DateTimeField("Production Time");
-		dtfProductionTime.setValue(LocalDateTime.now());
-		dtfProductionTime.setIcon(VaadinIcons.TIME_FORWARD);
-		dtfProductionTime.setRequiredIndicatorVisible(true);
+		dtfProductionTime1 = new DateTimeField(EVENT_TIME);
+		dtfProductionTime1.setValue(LocalDateTime.now());
+		dtfProductionTime1.setIcon(VaadinIcons.TIME_FORWARD);
+		dtfProductionTime1.setRequiredIndicatorVisible(true);
+
+		dtfProductionTime2 = new DateTimeField(TO_TIME);
+		dtfProductionTime2.setValue(LocalDateTime.now());
+		dtfProductionTime2.setIcon(VaadinIcons.TIME_FORWARD);
+		dtfProductionTime2.setRequiredIndicatorVisible(true);
 
 		btnRecordProduction = new Button("Record");
 		btnRecordProduction.setIcon(VaadinIcons.NOTEBOOK);
@@ -230,7 +257,13 @@ public class OperationsView extends VerticalLayout {
 		btnRecordProduction.setDescription("Record production event");
 		btnRecordProduction.addClickListener(event -> {
 			try {
-				recordProductionEvent();
+				String selectedItem = groupProductionSummary.getSelectedItem().get();
+				if (selectedItem.equals(BY_EVENT)) {
+					recordProductionEvent();
+				} else {
+					recordProductionSummary();
+				}
+				clearProduction();
 			} catch (Exception e) {
 				showException(e);
 			}
@@ -244,12 +277,15 @@ public class OperationsView extends VerticalLayout {
 		materialLayout.addComponents(lbMaterialId, lbMaterialDescription, lbJob);
 
 		HorizontalLayout quantityLayout = new HorizontalLayout();
-		quantityLayout.addComponents(tfAmount, lbUOM);
+		quantityLayout.addComponents(groupProductionType, tfAmount, lbUOM);
+
+		HorizontalLayout timeLayout = new HorizontalLayout();
+		timeLayout.addComponents(dtfProductionTime1, dtfProductionTime2);
 
 		VerticalLayout productionLayout = new VerticalLayout();
 		productionLayout.setMargin(true);
 
-		productionLayout.addComponents(materialLayout, groupProduction, quantityLayout, dtfProductionTime,
+		productionLayout.addComponents(materialLayout, groupProductionSummary, quantityLayout, timeLayout,
 				btnRecordProduction);
 
 		return productionLayout;
@@ -333,26 +369,26 @@ public class OperationsView extends VerticalLayout {
 
 	private void clearAvailability() {
 		tfReason.clear();
-		dtfAvailabilityTime1.setValue(LocalDateTime.now());
+		tfAvailabilityHours.clear();
+		tfAvailabilityMinutes.clear();
 	}
 
 	private void clearProduction() {
+		groupProductionType.clear();
 		tfAmount.clear();
-		dtfProductionTime.setValue(LocalDateTime.now());
-		groupProduction.clear();
+		tfAmount.setEnabled(false);
 	}
 
 	private void clearSetup() {
 		tfMaterial.clear();
 		tfJob.clear();
-		dtfSetupTime.setValue(LocalDateTime.now());
 	}
 
 	private void onSelectEntity(EntityNode node) throws Exception {
 		// clear fields
-		// clearAvailability();
-		// clearProduction();
-		// clearSetup();
+		clearAvailability();
+		clearProduction();
+		clearSetup();
 
 		Equipment equipment = getSelectedEquipment();
 		String job = equipment.getCurrentJob();
@@ -428,12 +464,12 @@ public class OperationsView extends VerticalLayout {
 		VerticalLayout reasonLayout = new VerticalLayout();
 		reasonLayout.setMargin(true);
 
-		groupAvailability = new RadioButtonGroup<>("Availability");
-		groupAvailability.setItems(AVAIL_EVENT, AVAIL_SUMMARY);
-		groupAvailability.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
-		groupAvailability.setRequiredIndicatorVisible(true);
+		groupAvailabilitySummary = new RadioButtonGroup<>("Availability");
+		groupAvailabilitySummary.setItems(BY_EVENT, SUMMARIZED);
+		groupAvailabilitySummary.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
+		groupAvailabilitySummary.setRequiredIndicatorVisible(true);
 
-		groupAvailability.addSelectionListener(event -> {
+		groupAvailabilitySummary.addSelectionListener(event -> {
 			try {
 				Optional<String> item = event.getSelectedItem();
 
@@ -457,13 +493,13 @@ public class OperationsView extends VerticalLayout {
 		dtfAvailabilityTime2.setIcon(VaadinIcons.TIME_FORWARD);
 		dtfAvailabilityTime2.setRequiredIndicatorVisible(true);
 
-		tfHours = new TextField("Hours");
-		tfHours.setIcon(VaadinIcons.CLOCK);
-		tfHours.setRequiredIndicatorVisible(true);
+		tfAvailabilityHours = new TextField(HOURS);
+		tfAvailabilityHours.setIcon(VaadinIcons.CLOCK);
+		tfAvailabilityHours.setRequiredIndicatorVisible(true);
 
-		tfMinutes = new TextField("Minutes");
-		tfMinutes.setIcon(VaadinIcons.CLOCK);
-		tfMinutes.setRequiredIndicatorVisible(true);
+		tfAvailabilityMinutes = new TextField(MINUTES);
+		tfAvailabilityMinutes.setIcon(VaadinIcons.CLOCK);
+		tfAvailabilityMinutes.setRequiredIndicatorVisible(true);
 
 		btnRecordAvailability = new Button("Record");
 		btnRecordAvailability.setIcon(VaadinIcons.NOTEBOOK);
@@ -472,21 +508,23 @@ public class OperationsView extends VerticalLayout {
 		btnRecordAvailability.setDescription("Button description");
 		btnRecordAvailability.addClickListener(event -> {
 			try {
-				String selectedItem = groupAvailability.getSelectedItem().get();
-				if (selectedItem.equals(AVAIL_EVENT)) {
+				String selectedItem = groupAvailabilitySummary.getSelectedItem().get();
+				if (selectedItem.equals(BY_EVENT)) {
 					recordAvailabilityEvent();
 				} else {
 					recordAvailabilitySummary();
 				}
+				clearAvailability();
 			} catch (Exception e) {
 				showException(e);
 			}
 		});
 
 		HorizontalLayout timeLayout = new HorizontalLayout();
-		timeLayout.addComponents(dtfAvailabilityTime1, dtfAvailabilityTime2, tfHours, tfMinutes);
+		timeLayout.addComponents(dtfAvailabilityTime1, dtfAvailabilityTime2, tfAvailabilityHours,
+				tfAvailabilityMinutes);
 
-		reasonLayout.addComponents(groupAvailability, tfReason, timeLayout, btnRecordAvailability);
+		reasonLayout.addComponents(groupAvailabilitySummary, tfReason, timeLayout, btnRecordAvailability);
 
 		return reasonLayout;
 	}
@@ -546,8 +584,26 @@ public class OperationsView extends VerticalLayout {
 		Equipment equipment = getSelectedEquipment();
 		Double amount = Double.valueOf(tfAmount.getValue());
 		Material material = (Material) tfMaterial.getData();
-		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfProductionTime.getValue());
+		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfProductionTime1.getValue());
 		operationsPresenter.recordProductionEvent(equipment, amount, material, odt);
+	}
+
+	private void recordProductionSummary() throws Exception {
+		Equipment equipment = getSelectedEquipment();
+		Double amount = null;
+
+		if (tfAmount.getValue() != null && tfAmount.getValue().trim().length() > 0) {
+			amount = Double.valueOf(tfAmount.getValue());
+		} else {
+			throw new Exception("An amount must be specified.");
+		}
+
+		Material material = (Material) tfMaterial.getData();
+
+		OffsetDateTime startTime = DomainUtils.fromLocalDateTime(dtfProductionTime1.getValue());
+		OffsetDateTime endTime = DomainUtils.fromLocalDateTime(dtfProductionTime2.getValue());
+
+		operationsPresenter.recordProductionSummary(equipment, amount, material, startTime, endTime);
 	}
 
 	private void recordChangeoverEvent() throws Exception {
@@ -588,17 +644,17 @@ public class OperationsView extends VerticalLayout {
 
 		OffsetDateTime startTime = DomainUtils.fromLocalDateTime(dtfAvailabilityTime1.getValue());
 		OffsetDateTime endTime = DomainUtils.fromLocalDateTime(dtfAvailabilityTime2.getValue());
-		
+
 		int seconds = 0;
-		
-		if (tfHours.getValue() != null && tfHours.getValue().trim().length() > 0) {
-			seconds = Integer.valueOf(tfHours.getValue().trim()) * 3600;
+
+		if (tfAvailabilityHours.getValue() != null && tfAvailabilityHours.getValue().trim().length() > 0) {
+			seconds = Integer.valueOf(tfAvailabilityHours.getValue().trim()) * 3600;
 		}
-		
-		if (tfMinutes.getValue() != null && tfMinutes.getValue().trim().length() > 0) {
-			seconds += Integer.valueOf(tfMinutes.getValue().trim()) * 60;
+
+		if (tfAvailabilityMinutes.getValue() != null && tfAvailabilityMinutes.getValue().trim().length() > 0) {
+			seconds += Integer.valueOf(tfAvailabilityMinutes.getValue().trim()) * 60;
 		}
-		
+
 		Duration duration = Duration.ofSeconds(seconds);
 
 		operationsPresenter.recordAvailabilitySummary(equipment, (Reason) tfReason.getData(), startTime, endTime,
@@ -606,16 +662,26 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private void onSelectAvailabilityData(String type) {
-		if (type.equals(AVAIL_EVENT)) {
+		if (type.equals(BY_EVENT)) {
 			dtfAvailabilityTime1.setCaption(EVENT_TIME);
 			dtfAvailabilityTime2.setVisible(false);
-			tfHours.setVisible(false);
-			tfMinutes.setVisible(false);
-		} else if (type.equals(AVAIL_SUMMARY)) {
+			tfAvailabilityHours.setVisible(false);
+			tfAvailabilityMinutes.setVisible(false);
+		} else if (type.equals(SUMMARIZED)) {
 			dtfAvailabilityTime1.setCaption(FROM_TIME);
 			dtfAvailabilityTime2.setVisible(true);
-			tfHours.setVisible(true);
-			tfMinutes.setVisible(true);
+			tfAvailabilityHours.setVisible(true);
+			tfAvailabilityMinutes.setVisible(true);
+		}
+	}
+
+	private void onSelectProductionData(String type) {
+		if (type.equals(BY_EVENT)) {
+			dtfProductionTime1.setCaption(EVENT_TIME);
+			dtfProductionTime2.setVisible(false);
+		} else if (type.equals(SUMMARIZED)) {
+			dtfProductionTime1.setCaption(FROM_TIME);
+			dtfProductionTime2.setVisible(true);
 		}
 	}
 
@@ -654,6 +720,8 @@ public class OperationsView extends VerticalLayout {
 		}
 		lbUOM.setValue(uom.getSymbol());
 		lbUOM.setData(uom);
+		
+		tfAmount.setEnabled(true);
 	}
 
 	// callback
