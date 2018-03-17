@@ -215,6 +215,7 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		lossSummary.setStartTime(startTime);
 		lossSummary.setEndTime(endTime);
 		lossSummary.setReason(reason);
+		lossSummary.setDuration(duration);
 
 		AvailabilitySummary summary = new AvailabilitySummary(lossSummary);
 

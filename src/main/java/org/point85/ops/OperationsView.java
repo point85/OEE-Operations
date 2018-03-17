@@ -42,20 +42,32 @@ import com.vaadin.ui.themes.ValoTheme;
 public class OperationsView extends VerticalLayout {
 	private static final long serialVersionUID = 6073934288316949481L;
 
+	// availability data
+	private static final String AVAIL_EVENT = "By Event";
+	private static final String AVAIL_SUMMARY = "Summarized";
+	private static final String EVENT_TIME = "Event Time";
+	private static final String FROM_TIME = "From Time";
+	private static final String TO_TIME = "To Time";
+
+	// good or reject production
 	private static final String PROD_GOOD = "Good";
 	private static final String PROD_REJECT = "Reject/Rework";
 
 	// availability
+	private RadioButtonGroup<String> groupAvailability;
 	private Button btnRecordAvailability;
 	private TextField tfReason;
-	private DateTimeField dtfAvailabilityTime;
-	private Tree<EntityNode> entityTree;
-	private TreeGrid<Reason> reasonTreeGrid;
-	private TreeGrid<MaterialCategory> materialTreeGrid;
+	private DateTimeField dtfAvailabilityTime1;
+	private DateTimeField dtfAvailabilityTime2;
+	private TextField tfHours;
+	private TextField tfMinutes;
+	private Tree<EntityNode> treeEntity;
+	private TreeGrid<Reason> treeGridReason;
+	private TreeGrid<MaterialCategory> treeGridMaterial;
 
 	// production
 	private Button btnRecordProduction;
-	private RadioButtonGroup<String> productionGroup;
+	private RadioButtonGroup<String> groupProduction;
 	private TextField tfAmount;
 	private DateTimeField dtfProductionTime;
 	private Label lbUOM;
@@ -69,9 +81,10 @@ public class OperationsView extends VerticalLayout {
 	private TextField tfJob;
 	private DateTimeField dtfSetupTime;
 
+	// the presenter
 	private OperationsPresenter operationsPresenter;
 
-	// reference to UI
+	// the UI
 	private OperationsUI ui;
 
 	public OperationsView(OperationsUI ui) {
@@ -97,13 +110,16 @@ public class OperationsView extends VerticalLayout {
 		addComponent(createFooter());
 
 		// query for the root plant entities
-		operationsPresenter.populateTopEntityNodes(entityTree);
+		operationsPresenter.populateTopEntityNodes(treeEntity);
 
 		// query for the reasons
-		operationsPresenter.populateReasonGrid(reasonTreeGrid);
+		operationsPresenter.populateReasonGrid(treeGridReason);
 
 		// query for the materials
-		operationsPresenter.populateMaterialGrid(materialTreeGrid);
+		operationsPresenter.populateMaterialGrid(treeGridMaterial);
+
+		// summary availability
+		groupAvailability.setSelectedItem(AVAIL_SUMMARY);
 	}
 
 	private Component createMainPanel() {
@@ -114,7 +130,7 @@ public class OperationsView extends VerticalLayout {
 		mainPanel.setStyleName(ValoTheme.SPLITPANEL_LARGE);
 
 		// plant entity tree on left
-		mainPanel.addComponent(createEntityTreePanel());
+		mainPanel.addComponent(createEntityTreeLayout());
 
 		// tabs on right
 		mainPanel.addComponent(createTabSheet());
@@ -151,11 +167,11 @@ public class OperationsView extends VerticalLayout {
 	private Component createEventPanel() {
 		VerticalSplitPanel eventPanel = new VerticalSplitPanel();
 		eventPanel.setSizeFull();
-		eventPanel.setSplitPosition(33.3f);
+		eventPanel.setSplitPosition(40.0f);
 		eventPanel.setStyleName(ValoTheme.SPLITPANEL_LARGE);
 
 		// event reason
-		eventPanel.addComponent(createAvailabilityPanel());
+		eventPanel.addComponent(createAvailabilityLayout());
 
 		// tree grid of reasons
 		eventPanel.addComponent(createReasonTreeLayout());
@@ -170,7 +186,7 @@ public class OperationsView extends VerticalLayout {
 		materialPanel.setStyleName(ValoTheme.SPLITPANEL_LARGE);
 
 		// material and job
-		materialPanel.addComponent(createSetupPanel());
+		materialPanel.addComponent(createSetupLayout());
 
 		// tree grid of materials
 		materialPanel.addComponent(createMaterialTreeLayout());
@@ -180,16 +196,16 @@ public class OperationsView extends VerticalLayout {
 
 	private Component createProductionLayout() {
 
-		productionGroup = new RadioButtonGroup<>("Production");
-		productionGroup.setItems(PROD_GOOD, PROD_REJECT);
-		productionGroup.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
-		productionGroup.setRequiredIndicatorVisible(true);
+		groupProduction = new RadioButtonGroup<>("Production");
+		groupProduction.setItems(PROD_GOOD, PROD_REJECT);
+		groupProduction.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
+		groupProduction.setRequiredIndicatorVisible(true);
 
-		productionGroup.addSelectionListener(event -> {
+		groupProduction.addSelectionListener(event -> {
 			try {
 				Optional<String> item = event.getSelectedItem();
 
-				onSelectResolverType(item.get());
+				onSelectProductionType(item.get());
 			} catch (Exception e) {
 				showException(e);
 			}
@@ -233,13 +249,13 @@ public class OperationsView extends VerticalLayout {
 		VerticalLayout productionLayout = new VerticalLayout();
 		productionLayout.setMargin(true);
 
-		productionLayout.addComponents(materialLayout, productionGroup, quantityLayout, dtfProductionTime,
+		productionLayout.addComponents(materialLayout, groupProduction, quantityLayout, dtfProductionTime,
 				btnRecordProduction);
 
 		return productionLayout;
 	}
 
-	private Component createEntityTreePanel() {
+	private Component createEntityTreeLayout() {
 		VerticalLayout layout = new VerticalLayout();
 		layout.setMargin(false);
 		layout.addComponentsAndExpand(createEntityTree());
@@ -266,10 +282,10 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private Tree<EntityNode> createEntityTree() {
-		entityTree = new Tree<>();
-		entityTree.setSelectionMode(SelectionMode.SINGLE);
-		entityTree.setCaption("Plant Entities");
-		entityTree.setItemIconGenerator(new IconGenerator<EntityNode>() {
+		treeEntity = new Tree<>();
+		treeEntity.setSelectionMode(SelectionMode.SINGLE);
+		treeEntity.setCaption("Plant Entities");
+		treeEntity.setItemIconGenerator(new IconGenerator<EntityNode>() {
 			private static final long serialVersionUID = 5138538319672111077L;
 
 			@Override
@@ -303,7 +319,7 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
-		entityTree.addSelectionListener(event -> {
+		treeEntity.addSelectionListener(event -> {
 			try {
 				EntityNode node = event.getFirstSelectedItem().get();
 				onSelectEntity(node);
@@ -312,18 +328,18 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
-		return entityTree;
+		return treeEntity;
 	}
 
 	private void clearAvailability() {
 		tfReason.clear();
-		dtfAvailabilityTime.setValue(LocalDateTime.now());
+		dtfAvailabilityTime1.setValue(LocalDateTime.now());
 	}
 
 	private void clearProduction() {
 		tfAmount.clear();
 		dtfProductionTime.setValue(LocalDateTime.now());
-		productionGroup.clear();
+		groupProduction.clear();
 	}
 
 	private void clearSetup() {
@@ -334,9 +350,9 @@ public class OperationsView extends VerticalLayout {
 
 	private void onSelectEntity(EntityNode node) throws Exception {
 		// clear fields
-		clearAvailability();
-		clearProduction();
-		clearSetup();
+		// clearAvailability();
+		// clearProduction();
+		// clearSetup();
 
 		Equipment equipment = getSelectedEquipment();
 		String job = equipment.getCurrentJob();
@@ -366,72 +382,88 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private Component createReasonTreeLayout() {
-		reasonTreeGrid = new TreeGrid<>();
-		reasonTreeGrid.setCaption("Reasons");
-		reasonTreeGrid.setHeightByRows(6);
+		treeGridReason = new TreeGrid<>();
+		treeGridReason.setCaption("Reasons");
+		treeGridReason.setHeightByRows(6);
 
-		reasonTreeGrid.addColumn(Reason::getName).setCaption("Name");
-		reasonTreeGrid.addColumn(Reason::getDescription).setCaption("Description");
-		reasonTreeGrid.addColumn(Reason::getLossCategory).setCaption("Loss Category");
+		treeGridReason.addColumn(Reason::getName).setCaption("Name");
+		treeGridReason.addColumn(Reason::getDescription).setCaption("Description");
+		treeGridReason.addColumn(Reason::getLossCategory).setCaption("Loss Category");
 
-		/*
-		reasonTreeGrid.addExpandListener(event -> System.out.println("Reason expanded: " + event.getExpandedItem()));
-		reasonTreeGrid
-				.addCollapseListener(event -> System.out.println("Reason collapsed: " + event.getCollapsedItem()));
-				*/
-
-		reasonTreeGrid.addItemClickListener(event -> {
+		treeGridReason.addItemClickListener(event -> {
 			Reason reason = event.getItem();
 			tfReason.setValue(reason.getName());
 			tfReason.setData(reason);
 		});
 
 		HorizontalLayout layout = new HorizontalLayout();
-		layout.addComponentsAndExpand(reasonTreeGrid);
+		layout.addComponentsAndExpand(treeGridReason);
 		layout.setMargin(true);
 
 		return layout;
 	}
 
 	private Component createMaterialTreeLayout() {
-		materialTreeGrid = new TreeGrid<>();
-		materialTreeGrid.setCaption("Material");
-		materialTreeGrid.setHeightByRows(6);
+		treeGridMaterial = new TreeGrid<>();
+		treeGridMaterial.setCaption("Material");
+		treeGridMaterial.setHeightByRows(6);
 
-		materialTreeGrid.addColumn(MaterialCategory::getName).setCaption("Name");
-		materialTreeGrid.addColumn(MaterialCategory::getDescription).setCaption("Description");
+		treeGridMaterial.addColumn(MaterialCategory::getName).setCaption("Name");
+		treeGridMaterial.addColumn(MaterialCategory::getDescription).setCaption("Description");
 
-		/*
-		materialTreeGrid
-				.addExpandListener(event -> System.out.println("Material expanded: " + event.getExpandedItem()));
-		materialTreeGrid
-				.addCollapseListener(event -> System.out.println("Material collapsed: " + event.getCollapsedItem()));
-				*/
-		materialTreeGrid.addItemClickListener(event -> {
+		treeGridMaterial.addItemClickListener(event -> {
 			Material material = event.getItem().getMaterial();
 			tfMaterial.setValue(material.getName());
 			tfMaterial.setData(material);
 		});
 
 		HorizontalLayout layout = new HorizontalLayout();
-		layout.addComponentsAndExpand(materialTreeGrid);
+		layout.addComponentsAndExpand(treeGridMaterial);
 		layout.setMargin(true);
 
 		return layout;
 	}
 
-	private Component createAvailabilityPanel() {
+	private Component createAvailabilityLayout() {
 		VerticalLayout reasonLayout = new VerticalLayout();
 		reasonLayout.setMargin(true);
+
+		groupAvailability = new RadioButtonGroup<>("Availability");
+		groupAvailability.setItems(AVAIL_EVENT, AVAIL_SUMMARY);
+		groupAvailability.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
+		groupAvailability.setRequiredIndicatorVisible(true);
+
+		groupAvailability.addSelectionListener(event -> {
+			try {
+				Optional<String> item = event.getSelectedItem();
+
+				onSelectAvailabilityData(item.get());
+			} catch (Exception e) {
+				showException(e);
+			}
+		});
 
 		tfReason = new TextField("Reason");
 		tfReason.setIcon(VaadinIcons.PENCIL);
 		tfReason.setRequiredIndicatorVisible(true);
 
-		dtfAvailabilityTime = new DateTimeField("Event Time");
-		dtfAvailabilityTime.setValue(LocalDateTime.now());
-		dtfAvailabilityTime.setIcon(VaadinIcons.TIME_FORWARD);
-		dtfAvailabilityTime.setRequiredIndicatorVisible(true);
+		dtfAvailabilityTime1 = new DateTimeField(EVENT_TIME);
+		dtfAvailabilityTime1.setValue(LocalDateTime.now());
+		dtfAvailabilityTime1.setIcon(VaadinIcons.TIME_FORWARD);
+		dtfAvailabilityTime1.setRequiredIndicatorVisible(true);
+
+		dtfAvailabilityTime2 = new DateTimeField(TO_TIME);
+		dtfAvailabilityTime2.setValue(LocalDateTime.now());
+		dtfAvailabilityTime2.setIcon(VaadinIcons.TIME_FORWARD);
+		dtfAvailabilityTime2.setRequiredIndicatorVisible(true);
+
+		tfHours = new TextField("Hours");
+		tfHours.setIcon(VaadinIcons.CLOCK);
+		tfHours.setRequiredIndicatorVisible(true);
+
+		tfMinutes = new TextField("Minutes");
+		tfMinutes.setIcon(VaadinIcons.CLOCK);
+		tfMinutes.setRequiredIndicatorVisible(true);
 
 		btnRecordAvailability = new Button("Record");
 		btnRecordAvailability.setIcon(VaadinIcons.NOTEBOOK);
@@ -440,18 +472,26 @@ public class OperationsView extends VerticalLayout {
 		btnRecordAvailability.setDescription("Button description");
 		btnRecordAvailability.addClickListener(event -> {
 			try {
-				recordAvailabilityEvent();
+				String selectedItem = groupAvailability.getSelectedItem().get();
+				if (selectedItem.equals(AVAIL_EVENT)) {
+					recordAvailabilityEvent();
+				} else {
+					recordAvailabilitySummary();
+				}
 			} catch (Exception e) {
 				showException(e);
 			}
 		});
 
-		reasonLayout.addComponents(tfReason, dtfAvailabilityTime, btnRecordAvailability);
+		HorizontalLayout timeLayout = new HorizontalLayout();
+		timeLayout.addComponents(dtfAvailabilityTime1, dtfAvailabilityTime2, tfHours, tfMinutes);
+
+		reasonLayout.addComponents(groupAvailability, tfReason, timeLayout, btnRecordAvailability);
 
 		return reasonLayout;
 	}
 
-	private Component createSetupPanel() {
+	private Component createSetupLayout() {
 		VerticalLayout layout = new VerticalLayout();
 		layout.setMargin(true);
 
@@ -486,7 +526,7 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	Equipment getSelectedEquipment() throws Exception {
-		Set<EntityNode> entityNodes = entityTree.getSelectedItems();
+		Set<EntityNode> entityNodes = treeEntity.getSelectedItems();
 
 		if (entityNodes.size() == 0) {
 			throw new Exception("Equipment must be selected in order to record the event.");
@@ -505,7 +545,7 @@ public class OperationsView extends VerticalLayout {
 	private void recordProductionEvent() throws Exception {
 		Equipment equipment = getSelectedEquipment();
 		Double amount = Double.valueOf(tfAmount.getValue());
-		Material material = (Material)tfMaterial.getData();
+		Material material = (Material) tfMaterial.getData();
 		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfProductionTime.getValue());
 		operationsPresenter.recordProductionEvent(equipment, amount, material, odt);
 	}
@@ -518,7 +558,7 @@ public class OperationsView extends VerticalLayout {
 		String job = tfJob.getValue();
 
 		// material
-		Material material = (Material)tfMaterial.getData();
+		Material material = (Material) tfMaterial.getData();
 
 		operationsPresenter.recordChangeoverEvent(equipment, job, material, odt);
 	}
@@ -532,7 +572,7 @@ public class OperationsView extends VerticalLayout {
 			throw new Exception("A reason must be selected.");
 		}
 
-		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfAvailabilityTime.getValue());
+		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfAvailabilityTime1.getValue());
 
 		operationsPresenter.recordAvailabilityEvent(equipment, (Reason) tfReason.getData(), odt);
 	}
@@ -546,15 +586,40 @@ public class OperationsView extends VerticalLayout {
 			throw new Exception("A reason must be selected.");
 		}
 
-		OffsetDateTime startTime = DomainUtils.fromLocalDateTime(dtfAvailabilityTime.getValue());
-		OffsetDateTime endTime = DomainUtils.fromLocalDateTime(dtfAvailabilityTime.getValue());
-		Duration duration = Duration.ofSeconds(600);
+		OffsetDateTime startTime = DomainUtils.fromLocalDateTime(dtfAvailabilityTime1.getValue());
+		OffsetDateTime endTime = DomainUtils.fromLocalDateTime(dtfAvailabilityTime2.getValue());
+		
+		int seconds = 0;
+		
+		if (tfHours.getValue() != null && tfHours.getValue().trim().length() > 0) {
+			seconds = Integer.valueOf(tfHours.getValue().trim()) * 3600;
+		}
+		
+		if (tfMinutes.getValue() != null && tfMinutes.getValue().trim().length() > 0) {
+			seconds += Integer.valueOf(tfMinutes.getValue().trim()) * 60;
+		}
+		
+		Duration duration = Duration.ofSeconds(seconds);
 
 		operationsPresenter.recordAvailabilitySummary(equipment, (Reason) tfReason.getData(), startTime, endTime,
 				duration);
 	}
 
-	private void onSelectResolverType(String type) throws Exception {
+	private void onSelectAvailabilityData(String type) {
+		if (type.equals(AVAIL_EVENT)) {
+			dtfAvailabilityTime1.setCaption(EVENT_TIME);
+			dtfAvailabilityTime2.setVisible(false);
+			tfHours.setVisible(false);
+			tfMinutes.setVisible(false);
+		} else if (type.equals(AVAIL_SUMMARY)) {
+			dtfAvailabilityTime1.setCaption(FROM_TIME);
+			dtfAvailabilityTime2.setVisible(true);
+			tfHours.setVisible(true);
+			tfMinutes.setVisible(true);
+		}
+	}
+
+	private void onSelectProductionType(String type) throws Exception {
 
 		// update current material/job
 		Equipment equipment = getSelectedEquipment();
