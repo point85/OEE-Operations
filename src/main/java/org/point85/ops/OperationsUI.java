@@ -60,6 +60,9 @@ public class OperationsUI extends UI {
 		PersistenceService.instance().initialize(jdbcConn, userName, password);
 
 		// main UI form
+		if (logger.isInfoEnabled()) {
+			logger.info("Launching UI.");
+		}
 		try {
 			operationsView = new OperationsView(this);
 			operationsView.setSizeFull();
@@ -76,7 +79,7 @@ public class OperationsUI extends UI {
 		}
 	}
 
-	@WebServlet(value = {"/Point85/*", "/*"}, name = "OEEOperationsServlet", asyncSupported = true)
+	@WebServlet(urlPatterns = {"/*"}, name = "OEEOperationsServlet", asyncSupported = true)
 	@VaadinServletConfiguration(ui = OperationsUI.class, productionMode = false)
 	public static class OEEOperationsServlet extends VaadinServlet {
 		private static final long serialVersionUID = 3872491814140753200L;

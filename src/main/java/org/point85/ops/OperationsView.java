@@ -158,17 +158,16 @@ public class OperationsView extends VerticalLayout {
 		lbMaterialId = new Label("Identifier");
 		lbMaterialDescription = new Label("Description");
 		lbJob = new Label("Job Name");
-		
+
 		Label material = new Label("MATERIAL");
 		material.addStyleName(ValoTheme.LABEL_BOLD);
-		
+
 		Label job = new Label("JOB");
 		job.addStyleName(ValoTheme.LABEL_BOLD);
 
 		HorizontalLayout materialLayout = new HorizontalLayout();
 		materialLayout.setMargin(false);
-		materialLayout.addComponents(material, lbMaterialId, lbMaterialDescription, job,
-				lbJob);
+		materialLayout.addComponents(material, lbMaterialId, lbMaterialDescription, job, lbJob);
 
 		return materialLayout;
 	}
@@ -186,7 +185,7 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
-		Tab eventTab = tabSheet.addTab(createEventPanel());
+		Tab eventTab = tabSheet.addTab(createAvailabilityPanel());
 		eventTab.setCaption("Availability/Rate");
 		eventTab.setIcon(VaadinIcons.AUTOMATION);
 
@@ -200,10 +199,10 @@ public class OperationsView extends VerticalLayout {
 		return tabSheet;
 	}
 
-	private Component createEventPanel() {
+	private Component createAvailabilityPanel() {
 		VerticalSplitPanel eventPanel = new VerticalSplitPanel();
 		eventPanel.setSizeFull();
-		eventPanel.setSplitPosition(40.0f);
+		eventPanel.setSplitPosition(45.0f);
 		eventPanel.setStyleName(ValoTheme.SPLITPANEL_LARGE);
 
 		// event reason
@@ -262,12 +261,12 @@ public class OperationsView extends VerticalLayout {
 		});
 
 		tfAmount = new TextField("Quantity");
-		tfAmount.setIcon(VaadinIcons.PLAY_CIRCLE_O);
+		tfAmount.setIcon(VaadinIcons.CUBES);
 		tfAmount.setRequiredIndicatorVisible(true);
 		tfAmount.setEnabled(false);
 
 		lbUOM = new Label("Unit");
-		lbUOM.setWidth("75px");
+		lbUOM.addStyleName(ValoTheme.LABEL_BOLD);
 
 		dtfProductionTime1 = new DateTimeField(EVENT_TIME);
 		dtfProductionTime1.setValue(LocalDateTime.now());
@@ -407,7 +406,7 @@ public class OperationsView extends VerticalLayout {
 		tfMaterial.setData(null);
 		tfJob.clear();
 	}
-	
+
 	private void updateMaterialJob(Material material, String job) {
 		// current job
 		if (job != null) {
@@ -463,7 +462,7 @@ public class OperationsView extends VerticalLayout {
 
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.addComponentsAndExpand(treeGridReason);
-		layout.setMargin(false);
+		layout.setMargin(true);
 
 		return layout;
 	}
@@ -660,7 +659,7 @@ public class OperationsView extends VerticalLayout {
 		}
 
 		operationsPresenter.recordChangeoverEvent(equipment, job, material, odt);
-		
+
 		updateMaterialJob(material, job);
 	}
 
@@ -760,7 +759,8 @@ public class OperationsView extends VerticalLayout {
 
 		UnitOfMeasure uom = equipment.getUOM(material, resolverType);
 		if (uom == null) {
-			throw new Exception("The unit of measure has not been defined for material " + material.getName());
+			throw new Exception("The unit of measure has not been defined for material " + material.getName()
+					+ " for this type of production.");
 		}
 		lbUOM.setValue(uom.getSymbol());
 		lbUOM.setData(uom);
