@@ -29,6 +29,7 @@ import com.vaadin.ui.themes.ValoTheme;
 // push UI changes from background threads
 @Push
 @Theme(ValoTheme.THEME_NAME)
+//@Theme("Point85")
 public class OperationsUI extends UI {
 	private static final long serialVersionUID = -4803764060046008577L;
 
@@ -75,7 +76,7 @@ public class OperationsUI extends UI {
 		}
 	}
 
-	@WebServlet(urlPatterns = "/*", name = "OEEOperationsServlet", asyncSupported = true)
+	@WebServlet(value = {"/Point85/*", "/*"}, name = "OEEOperationsServlet", asyncSupported = true)
 	@VaadinServletConfiguration(ui = OperationsUI.class, productionMode = false)
 	public static class OEEOperationsServlet extends VaadinServlet {
 		private static final long serialVersionUID = 3872491814140753200L;

@@ -9,13 +9,6 @@
   <servlet>
     <servlet-name>OEEOperationsServlet</servlet-name>
     
-    <!--
-    <init-param>
-      <param-name>log4jProps</param-name>
-      <param-value>log4j.properties</param-value>
-    </init-param>
-    -->
-    
     <!-- JDBC connection -->
    	<init-param>
       <param-name>jdbcConn</param-name>

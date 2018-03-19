@@ -96,14 +96,6 @@ public class OperationsPresenter implements CollectorExceptionListener {
 
 		// Initialize a TreeGrid and set in-memory data
 		reasonTreeGrid.setItems(reasons, Reason::getChildren);
-
-		// The first column gets the hierarchy indicator by default
-		/*
-		 * reasonTreeGrid.addColumn(Reason::getName).setCaption("Name");
-		 * reasonTreeGrid.addColumn(Reason::getDescription).setCaption("Description");
-		 * reasonTreeGrid.addColumn(Reason::getLossCategory).setCaption("Loss Category"
-		 * );
-		 */
 	}
 
 	void populateMaterialGrid(TreeGrid<MaterialCategory> materialTreeGrid) {

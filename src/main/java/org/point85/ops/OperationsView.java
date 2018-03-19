@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.point85.domain.DomainUtils;
+import org.point85.domain.collector.SetupHistory;
 import org.point85.domain.plant.EntityLevel;
 import org.point85.domain.plant.Equipment;
 import org.point85.domain.plant.EquipmentMaterial;
@@ -142,8 +143,34 @@ public class OperationsView extends VerticalLayout {
 		mainPanel.addComponent(createEntityTreeLayout());
 
 		// tabs on right
-		mainPanel.addComponent(createTabSheet());
+		VerticalLayout rightLayout = new VerticalLayout();
+		rightLayout.setMargin(true);
+		rightLayout.setSizeFull();
+		Component tabSheet = createTabSheet();
+		rightLayout.addComponents(createMaterialJobLayout(), tabSheet);
+		rightLayout.setExpandRatio(tabSheet, 1.0f);
+
+		mainPanel.addComponent(rightLayout);
 		return mainPanel;
+	}
+
+	private Component createMaterialJobLayout() {
+		lbMaterialId = new Label("Identifier");
+		lbMaterialDescription = new Label("Description");
+		lbJob = new Label("Job Name");
+		
+		Label material = new Label("MATERIAL");
+		material.addStyleName(ValoTheme.LABEL_BOLD);
+		
+		Label job = new Label("JOB");
+		job.addStyleName(ValoTheme.LABEL_BOLD);
+
+		HorizontalLayout materialLayout = new HorizontalLayout();
+		materialLayout.setMargin(false);
+		materialLayout.addComponents(material, lbMaterialId, lbMaterialDescription, job,
+				lbJob);
+
+		return materialLayout;
 	}
 
 	private Component createTabSheet() {
@@ -160,7 +187,7 @@ public class OperationsView extends VerticalLayout {
 		});
 
 		Tab eventTab = tabSheet.addTab(createEventPanel());
-		eventTab.setCaption("Availability");
+		eventTab.setCaption("Availability/Rate");
 		eventTab.setIcon(VaadinIcons.AUTOMATION);
 
 		Tab productionTab = tabSheet.addTab(createProductionLayout());
@@ -271,24 +298,18 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
-		lbMaterialId = new Label("Material");
-		lbMaterialDescription = new Label("Description");
-		lbJob = new Label("Job");
-
-		HorizontalLayout materialLayout = new HorizontalLayout();
-		materialLayout.addComponents(lbMaterialId, lbMaterialDescription, lbJob);
-
 		HorizontalLayout quantityLayout = new HorizontalLayout();
 		quantityLayout.addComponents(groupProductionType, tfAmount, lbUOM);
+		quantityLayout.setMargin(false);
 
 		HorizontalLayout timeLayout = new HorizontalLayout();
 		timeLayout.addComponents(dtfProductionTime1, dtfProductionTime2);
+		timeLayout.setMargin(false);
 
 		VerticalLayout productionLayout = new VerticalLayout();
 		productionLayout.setMargin(true);
 
-		productionLayout.addComponents(materialLayout, groupProductionSummary, quantityLayout, timeLayout,
-				btnRecordProduction);
+		productionLayout.addComponents(groupProductionSummary, quantityLayout, timeLayout, btnRecordProduction);
 
 		return productionLayout;
 	}
@@ -386,25 +407,14 @@ public class OperationsView extends VerticalLayout {
 		tfMaterial.setData(null);
 		tfJob.clear();
 	}
-
-	private void onSelectEntity(EntityNode node) throws Exception {
-		// clear fields
-		clearAvailability();
-		clearProduction();
-		clearSetup();
-
-		Equipment equipment = getSelectedEquipment();
-		String job = equipment.getCurrentJob();
-
+	
+	private void updateMaterialJob(Material material, String job) {
 		// current job
 		if (job != null) {
 			lbJob.setValue(job);
 		} else {
 			lbJob.setValue("");
 		}
-
-		// current material
-		Material material = equipment.getCurrentMaterial();
 
 		if (material != null) {
 			lbMaterialId.setValue(material.getName());
@@ -414,6 +424,20 @@ public class OperationsView extends VerticalLayout {
 			lbMaterialId.setValue("");
 			lbMaterialId.setData(null);
 			lbMaterialDescription.setValue("");
+		}
+	}
+
+	private void onSelectEntity(EntityNode node) throws Exception {
+		// clear fields
+		clearAvailability();
+		clearProduction();
+		clearSetup();
+
+		Equipment equipment = getSelectedEquipment();
+		SetupHistory lastSetup = equipment.getLastSetup();
+
+		if (lastSetup != null) {
+			updateMaterialJob(lastSetup.getMaterial(), lastSetup.getJob());
 		}
 
 		btnRecordAvailability.setEnabled(true);
@@ -439,7 +463,7 @@ public class OperationsView extends VerticalLayout {
 
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.addComponentsAndExpand(treeGridReason);
-		layout.setMargin(true);
+		layout.setMargin(false);
 
 		return layout;
 	}
@@ -470,9 +494,6 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private Component createAvailabilityLayout() {
-		VerticalLayout reasonLayout = new VerticalLayout();
-		reasonLayout.setMargin(true);
-
 		groupAvailabilitySummary = new RadioButtonGroup<>("Availability");
 		groupAvailabilitySummary.setItems(BY_EVENT, SUMMARIZED);
 		groupAvailabilitySummary.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
@@ -530,17 +551,18 @@ public class OperationsView extends VerticalLayout {
 		});
 
 		HorizontalLayout timeLayout = new HorizontalLayout();
+		timeLayout.setMargin(false);
 		timeLayout.addComponents(dtfAvailabilityTime1, dtfAvailabilityTime2, tfAvailabilityHours,
 				tfAvailabilityMinutes);
 
-		reasonLayout.addComponents(groupAvailabilitySummary, tfReason, timeLayout, btnRecordAvailability);
+		VerticalLayout availabilityLayout = new VerticalLayout();
+		availabilityLayout.setMargin(true);
+		availabilityLayout.addComponents(groupAvailabilitySummary, tfReason, timeLayout, btnRecordAvailability);
 
-		return reasonLayout;
+		return availabilityLayout;
 	}
 
 	private Component createSetupLayout() {
-		VerticalLayout layout = new VerticalLayout();
-		layout.setMargin(true);
 
 		tfMaterial = new TextField("Material");
 		tfMaterial.setIcon(VaadinIcons.STOCK);
@@ -568,9 +590,14 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
-		layout.addComponents(tfMaterial, tfJob, dtfSetupTime, btnRecordSetup);
+		HorizontalLayout materialJobLayout = new HorizontalLayout();
+		materialJobLayout.addComponents(tfMaterial, tfJob);
 
-		return layout;
+		VerticalLayout setupLayout = new VerticalLayout();
+		setupLayout.setMargin(true);
+		setupLayout.addComponents(materialJobLayout, dtfSetupTime, btnRecordSetup);
+
+		return setupLayout;
 	}
 
 	Equipment getSelectedEquipment() throws Exception {
@@ -633,6 +660,8 @@ public class OperationsView extends VerticalLayout {
 		}
 
 		operationsPresenter.recordChangeoverEvent(equipment, job, material, odt);
+		
+		updateMaterialJob(material, job);
 	}
 
 	private void recordAvailabilityEvent() throws Exception {
@@ -702,11 +731,10 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private void onSelectProductionType(String type) throws Exception {
-
 		// update current material/job
 		Equipment equipment = getSelectedEquipment();
 
-		Material material = equipment.getCurrentMaterial();
+		Material material = (Material) lbMaterialId.getData();
 
 		if (material == null) {
 			throw new Exception("The material being processed must be defined.");

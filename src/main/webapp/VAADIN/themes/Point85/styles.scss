@@ -1,11 +1,7 @@
-@import "Point85.scss";
+
+
 @import "addons.scss";
+@import "Point85.scss";
 
-// This file prefixes all rules with the theme name to avoid causing conflicts with other themes.
-// The actual styles should be defined in Point85.scss
-
-.Point85 {
-  @include addons;
-  @include Point85;
-
-}
+@include addons;
+@include Point85;
