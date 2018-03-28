@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.point85.domain.DomainUtils;
-import org.point85.domain.collector.SetupHistory;
+import org.point85.domain.collector.SetupRecord;
 import org.point85.domain.plant.EntityLevel;
 import org.point85.domain.plant.Equipment;
 import org.point85.domain.plant.EquipmentMaterial;
@@ -16,9 +16,12 @@ import org.point85.domain.plant.Material;
 import org.point85.domain.plant.PlantEntity;
 import org.point85.domain.plant.Reason;
 import org.point85.domain.script.EventResolverType;
+import org.point85.domain.script.ResolvedEvent;
 import org.point85.domain.uom.Quantity;
 import org.point85.domain.uom.UnitOfMeasure;
 
+import com.vaadin.data.TreeData;
+import com.vaadin.data.provider.TreeDataProvider;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.Resource;
 import com.vaadin.ui.Alignment;
@@ -62,8 +65,8 @@ public class OperationsView extends VerticalLayout {
 	private RadioButtonGroup<String> groupAvailabilitySummary;
 	private Button btnRecordAvailability;
 	private TextField tfReason;
-	private DateTimeField dtfAvailabilityTime1;
-	private DateTimeField dtfAvailabilityTime2;
+	private DateTimeField dtfAvailabilityStart;
+	private DateTimeField dtfAvailabilityEnd;
 	private TextField tfAvailabilityHours;
 	private TextField tfAvailabilityMinutes;
 	private Tree<EntityNode> treeEntity;
@@ -285,12 +288,12 @@ public class OperationsView extends VerticalLayout {
 		btnRecordProduction.setDescription("Record production event");
 		btnRecordProduction.addClickListener(event -> {
 			try {
-				String selectedItem = groupProductionSummary.getSelectedItem().get();
-				if (selectedItem.equals(BY_EVENT)) {
-					recordProductionEvent();
-				} else {
-					recordProductionSummary();
-				}
+				/*
+				 * String selectedItem = groupProductionSummary.getSelectedItem().get(); if
+				 * (selectedItem.equals(BY_EVENT)) { recordProductionEvent(); } else {
+				 * recordProductionSummary(); }
+				 */
+				recordProductionEvent();
 				clearProduction();
 			} catch (Exception e) {
 				showException(e);
@@ -426,22 +429,40 @@ public class OperationsView extends VerticalLayout {
 		}
 	}
 
-	private void onSelectEntity(EntityNode node) throws Exception {
+	private void onSelectEntity(EntityNode entityNode) throws Exception {
 		// clear fields
 		clearAvailability();
 		clearProduction();
 		clearSetup();
 
-		Equipment equipment = getSelectedEquipment();
-		SetupHistory lastSetup = equipment.getLastSetup();
+		boolean enabled = false;
 
-		if (lastSetup != null) {
-			updateMaterialJob(lastSetup.getMaterial(), lastSetup.getJob());
+		Equipment equipment = getSelectedEquipment();
+
+		if (equipment != null) {
+			enabled = true;
+
+			SetupRecord lastSetup = operationsPresenter.getLastSetup(equipment);
+
+			if (lastSetup != null) {
+				updateMaterialJob(lastSetup.getMaterial(), lastSetup.getJob());
+			}
+		} else {
+			// higher level, get the children
+			TreeDataProvider<EntityNode> dataProvider = (TreeDataProvider<EntityNode>) treeEntity.getDataProvider();
+			TreeData<EntityNode> treeData = dataProvider.getTreeData();
+
+			Set<EntityNode> children = entityNode.getChildren();
+
+			// add the node and its children
+			treeData.addItems(entityNode, children);
+			// children.forEach(entityNode -> treeData.addItems(entityNode,
+			// entityNode.getChildren()));
 		}
 
-		btnRecordAvailability.setEnabled(true);
-		btnRecordProduction.setEnabled(true);
-		btnRecordSetup.setEnabled(true);
+		btnRecordAvailability.setEnabled(enabled);
+		btnRecordProduction.setEnabled(enabled);
+		btnRecordSetup.setEnabled(enabled);
 
 	}
 
@@ -512,15 +533,15 @@ public class OperationsView extends VerticalLayout {
 		tfReason.setIcon(VaadinIcons.PENCIL);
 		tfReason.setRequiredIndicatorVisible(true);
 
-		dtfAvailabilityTime1 = new DateTimeField(EVENT_TIME);
-		dtfAvailabilityTime1.setValue(LocalDateTime.now());
-		dtfAvailabilityTime1.setIcon(VaadinIcons.TIME_FORWARD);
-		dtfAvailabilityTime1.setRequiredIndicatorVisible(true);
+		dtfAvailabilityStart = new DateTimeField(EVENT_TIME);
+		dtfAvailabilityStart.setValue(LocalDateTime.now());
+		dtfAvailabilityStart.setIcon(VaadinIcons.TIME_FORWARD);
+		dtfAvailabilityStart.setRequiredIndicatorVisible(true);
 
-		dtfAvailabilityTime2 = new DateTimeField(TO_TIME);
-		dtfAvailabilityTime2.setValue(LocalDateTime.now());
-		dtfAvailabilityTime2.setIcon(VaadinIcons.TIME_FORWARD);
-		dtfAvailabilityTime2.setRequiredIndicatorVisible(true);
+		dtfAvailabilityEnd = new DateTimeField(TO_TIME);
+		dtfAvailabilityEnd.setValue(null);
+		dtfAvailabilityEnd.setIcon(VaadinIcons.TIME_FORWARD);
+		dtfAvailabilityEnd.setRequiredIndicatorVisible(true);
 
 		tfAvailabilityHours = new TextField(HOURS);
 		tfAvailabilityHours.setIcon(VaadinIcons.CLOCK);
@@ -537,12 +558,7 @@ public class OperationsView extends VerticalLayout {
 		btnRecordAvailability.setDescription("Button description");
 		btnRecordAvailability.addClickListener(event -> {
 			try {
-				String selectedItem = groupAvailabilitySummary.getSelectedItem().get();
-				if (selectedItem.equals(BY_EVENT)) {
-					recordAvailabilityEvent();
-				} else {
-					recordAvailabilitySummary();
-				}
+				recordAvailabilityEvent();
 				clearAvailability();
 			} catch (Exception e) {
 				showException(e);
@@ -551,8 +567,7 @@ public class OperationsView extends VerticalLayout {
 
 		HorizontalLayout timeLayout = new HorizontalLayout();
 		timeLayout.setMargin(false);
-		timeLayout.addComponents(dtfAvailabilityTime1, dtfAvailabilityTime2, tfAvailabilityHours,
-				tfAvailabilityMinutes);
+		timeLayout.addComponents(dtfAvailabilityStart, dtfAvailabilityEnd, tfAvailabilityHours, tfAvailabilityMinutes);
 
 		VerticalLayout availabilityLayout = new VerticalLayout();
 		availabilityLayout.setMargin(true);
@@ -582,7 +597,7 @@ public class OperationsView extends VerticalLayout {
 		btnRecordSetup.setDescription("Button description");
 		btnRecordSetup.addClickListener(event -> {
 			try {
-				recordChangeoverEvent();
+				recordSetupEvent();
 				clearSetup();
 			} catch (Exception e) {
 				showException(e);
@@ -600,31 +615,25 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	Equipment getSelectedEquipment() throws Exception {
+		Equipment equipment = null;
+
 		Set<EntityNode> entityNodes = treeEntity.getSelectedItems();
 
 		if (entityNodes.size() == 0) {
-			throw new Exception("Equipment must be selected in order to record the event.");
+			return equipment;
 		}
 
 		Iterator<EntityNode> iter = entityNodes.iterator();
 		PlantEntity entity = iter.next().getEntity();
 
-		if (!entity.getLevel().equals(EntityLevel.EQUIPMENT)) {
-			throw new Exception("Equipment must be selected in order to record the event.");
+		if (entity.getLevel().equals(EntityLevel.EQUIPMENT)) {
+			equipment = (Equipment) entity;
 		}
 
-		return (Equipment) entity;
+		return equipment;
 	}
 
-	private void recordProductionEvent() throws Exception {
-		Equipment equipment = getSelectedEquipment();
-		Double amount = Double.valueOf(tfAmount.getValue());
-		Material material = (Material) lbMaterialId.getData();
-		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfProductionTime1.getValue());
-		operationsPresenter.recordProductionEvent(equipment, amount, material, odt);
-	}
-
-	private void recordProductionSummary() throws Exception {
+	public void recordProductionEvent() throws Exception {
 		Equipment equipment = getSelectedEquipment();
 		Double amount = null;
 
@@ -641,10 +650,22 @@ public class OperationsView extends VerticalLayout {
 
 		Quantity quantity = new Quantity(amount, (UnitOfMeasure) lbUOM.getData());
 
-		operationsPresenter.recordProductionSummary(equipment, quantity, material, startTime, endTime);
+		ResolvedEvent event = new ResolvedEvent(equipment);
+		event.setMaterial(material);
+		event.setStartTime(startTime);
+		event.setEndTime(endTime);
+		event.setQuantity(quantity);
+
+		if (operationsPresenter.getResolverType() == null) {
+			throw new Exception("A production type must be selected.");
+		}
+
+		event.setResolverType(operationsPresenter.getResolverType());
+
+		operationsPresenter.recordProductionEvent(event);
 	}
 
-	private void recordChangeoverEvent() throws Exception {
+	private void recordSetupEvent() throws Exception {
 		Equipment equipment = getSelectedEquipment();
 		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfSetupTime.getValue());
 
@@ -658,7 +679,21 @@ public class OperationsView extends VerticalLayout {
 			throw new Exception("Material and/or a job must be specified.");
 		}
 
-		operationsPresenter.recordChangeoverEvent(equipment, job, material, odt);
+		ResolvedEvent event = new ResolvedEvent(equipment);
+		event.setStartTime(odt);
+		event.setJob(job);
+		event.setMaterial(material);
+
+		// job
+		if (job != null && job.trim().length() > 0) {
+			event.setResolverType(EventResolverType.JOB);
+		}
+
+		if (material != null) {
+			event.setResolverType(EventResolverType.MATERIAL);
+		}
+
+		operationsPresenter.recordSetupEvent(event);
 
 		updateMaterialJob(material, job);
 	}
@@ -666,54 +701,56 @@ public class OperationsView extends VerticalLayout {
 	private void recordAvailabilityEvent() throws Exception {
 		Equipment equipment = getSelectedEquipment();
 
-		String reason = tfReason.getValue();
+		Reason reason = (Reason) tfReason.getData();
 
-		if (reason == null || reason.length() == 0 || tfReason.getData() == null) {
+		if (reason == null) {
 			throw new Exception("A reason must be selected.");
 		}
 
-		OffsetDateTime odt = DomainUtils.fromLocalDateTime(dtfAvailabilityTime1.getValue());
+		OffsetDateTime startTime = DomainUtils.fromLocalDateTime(dtfAvailabilityStart.getValue());
 
-		operationsPresenter.recordAvailabilityEvent(equipment, (Reason) tfReason.getData(), odt);
-	}
-
-	private void recordAvailabilitySummary() throws Exception {
-		Equipment equipment = getSelectedEquipment();
-
-		String reason = tfReason.getValue();
-
-		if (reason == null || reason.length() == 0 || tfReason.getData() == null) {
-			throw new Exception("A reason must be selected.");
+		OffsetDateTime endTime = null;
+		if (dtfAvailabilityEnd.getValue() != null) {
+			endTime = DomainUtils.fromLocalDateTime(dtfAvailabilityEnd.getValue());
 		}
 
-		OffsetDateTime startTime = DomainUtils.fromLocalDateTime(dtfAvailabilityTime1.getValue());
-		OffsetDateTime endTime = DomainUtils.fromLocalDateTime(dtfAvailabilityTime2.getValue());
+		// duration
+		Duration duration = null;
 
-		int seconds = 0;
+		String selectedItem = groupAvailabilitySummary.getSelectedItem().get();
+		if (!selectedItem.equals(BY_EVENT)) {
+			// specified duration
+			int seconds = 0;
 
-		if (tfAvailabilityHours.getValue() != null && tfAvailabilityHours.getValue().trim().length() > 0) {
-			seconds = Integer.valueOf(tfAvailabilityHours.getValue().trim()) * 3600;
+			if (tfAvailabilityHours.getValue() != null && tfAvailabilityHours.getValue().trim().length() > 0) {
+				seconds = Integer.valueOf(tfAvailabilityHours.getValue().trim()) * 3600;
+			}
+
+			if (tfAvailabilityMinutes.getValue() != null && tfAvailabilityMinutes.getValue().trim().length() > 0) {
+				seconds += Integer.valueOf(tfAvailabilityMinutes.getValue().trim()) * 60;
+			}
+
+			duration = Duration.ofSeconds(seconds);
 		}
 
-		if (tfAvailabilityMinutes.getValue() != null && tfAvailabilityMinutes.getValue().trim().length() > 0) {
-			seconds += Integer.valueOf(tfAvailabilityMinutes.getValue().trim()) * 60;
-		}
+		ResolvedEvent event = new ResolvedEvent(equipment);
+		event.setReason(reason);
+		event.setStartTime(startTime);
+		event.setEndTime(endTime);
+		event.setDuration(duration);
 
-		Duration duration = Duration.ofSeconds(seconds);
-
-		operationsPresenter.recordAvailabilitySummary(equipment, (Reason) tfReason.getData(), startTime, endTime,
-				duration);
+		this.operationsPresenter.recordAvailabilityEvent(event);
 	}
 
 	private void onSelectAvailabilityData(String type) {
 		if (type.equals(BY_EVENT)) {
-			dtfAvailabilityTime1.setCaption(EVENT_TIME);
-			dtfAvailabilityTime2.setVisible(false);
+			dtfAvailabilityStart.setCaption(EVENT_TIME);
+			dtfAvailabilityEnd.setVisible(false);
 			tfAvailabilityHours.setVisible(false);
 			tfAvailabilityMinutes.setVisible(false);
 		} else if (type.equals(SUMMARIZED)) {
-			dtfAvailabilityTime1.setCaption(FROM_TIME);
-			dtfAvailabilityTime2.setVisible(true);
+			dtfAvailabilityStart.setCaption(FROM_TIME);
+			dtfAvailabilityEnd.setVisible(true);
 			tfAvailabilityHours.setVisible(true);
 			tfAvailabilityMinutes.setVisible(true);
 		}

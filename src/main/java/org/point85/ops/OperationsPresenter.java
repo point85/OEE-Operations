@@ -1,27 +1,18 @@
 package org.point85.ops;
 
-import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.point85.domain.collector.AvailabilityHistory;
-import org.point85.domain.collector.AvailabilitySummary;
 import org.point85.domain.collector.CollectorExceptionListener;
 import org.point85.domain.collector.CollectorServer;
-import org.point85.domain.collector.LossSummary;
-import org.point85.domain.collector.ProductionSummary;
-import org.point85.domain.collector.SetupHistory;
+import org.point85.domain.collector.SetupRecord;
 import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.Equipment;
-import org.point85.domain.plant.Material;
 import org.point85.domain.plant.PlantEntity;
 import org.point85.domain.plant.Reason;
 import org.point85.domain.script.EventResolverType;
 import org.point85.domain.script.ResolvedEvent;
-import org.point85.domain.uom.Quantity;
-import org.point85.domain.uom.UnitOfMeasure;
 
 import com.vaadin.data.TreeData;
 import com.vaadin.data.provider.TreeDataProvider;
@@ -47,6 +38,10 @@ public class OperationsPresenter implements CollectorExceptionListener {
 
 	void setResolverType(EventResolverType resolverType) {
 		this.resolverType = resolverType;
+	}
+
+	EventResolverType getResolverType() {
+		return this.resolverType;
 	}
 
 	CollectorServer getCollectorServer() {
@@ -82,13 +77,12 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		// An initial entity tree
 		TreeData<EntityNode> treeData = new TreeData<>();
 
-		// add the roots
+		// add the roots 
 		treeData.addItems(null, entityNodes);
-
-		entityNodes.forEach(entityNode -> treeData.addItems(entityNode, entityNode.getChildren()));
+		//entityNodes.forEach(entityNode -> treeData.addItems(entityNode, entityNode.getChildren()));
 
 		TreeDataProvider<EntityNode> dataProvider = new TreeDataProvider<>(treeData);
-		entityTree.setDataProvider(dataProvider);
+		entityTree.setDataProvider(dataProvider);		
 	}
 
 	void populateReasonGrid(TreeGrid<Reason> reasonTreeGrid) {
@@ -124,84 +118,19 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		operationsView.onException(e);
 	}
 
-	void recordProductionEvent(Equipment equipment, Double amount, Material material, OffsetDateTime odt)
-			throws Exception {
-		if (resolverType == null) {
-			throw new Exception("A production type must be selected.");
-		}
-
-		ResolvedEvent event = new ResolvedEvent();
-		event.setEquipment(equipment);
-		event.setMaterial(material);
-		event.setTimestamp(odt);
-		event.setResolverType(resolverType);
-
-		collectorServer.saveProductionHistory(event);
+	void recordProductionEvent(ResolvedEvent event) throws Exception {
+		collectorServer.saveProductionRecord(event);
 	}
 
-	void recordProductionSummary(Equipment equipment, Quantity quantity, Material material, OffsetDateTime startTime,
-			OffsetDateTime endTime) throws Exception {
-		if (resolverType == null) {
-			throw new Exception("A production type must be selected.");
-		}
-
-		LossSummary lossSummary = new LossSummary();
-		lossSummary.setEquipment(equipment);
-		lossSummary.setMaterial(material);
-		lossSummary.setStartTime(startTime);
-		lossSummary.setEndTime(endTime);
-		lossSummary.setResolverType(resolverType);
-		lossSummary.setQuantity(quantity);
-
-		ProductionSummary summary = new ProductionSummary(lossSummary);
-
-		PersistenceService.instance().persist(summary);
+	void recordSetupEvent(ResolvedEvent event) throws Exception {
+		collectorServer.saveSetupRecord(event);
 	}
 
-	void recordChangeoverEvent(Equipment equipment, String job, Material material, OffsetDateTime odt)
-			throws Exception {
-		ResolvedEvent event = new ResolvedEvent();
-		event.setEquipment(equipment);
-		event.setTimestamp(odt);
-		event.setJob(job);
-		event.setMaterial(material);
-
-		// job
-		if (job != null && job.trim().length() > 0) {
-			event.setResolverType(EventResolverType.JOB);
-		}
-
-		if (material != null) {
-			event.setResolverType(EventResolverType.MATERIAL);
-		}
-		SetupHistory history = new SetupHistory(event);
-
-		PersistenceService.instance().persist(history);
+	void recordAvailabilityEvent(ResolvedEvent event) throws Exception {
+		collectorServer.saveAvailabilityRecord(event);
 	}
 
-	void recordAvailabilityEvent(Equipment equipment, Reason reason, OffsetDateTime odt) throws Exception {
-		ResolvedEvent event = new ResolvedEvent();
-		event.setEquipment(equipment);
-		event.setTimestamp(odt);
-
-		AvailabilityHistory history = new AvailabilityHistory(event);
-		history.setReason(reason);
-
-		PersistenceService.instance().persist(history);
-	}
-
-	void recordAvailabilitySummary(Equipment equipment, Reason reason, OffsetDateTime startTime, OffsetDateTime endTime,
-			Duration duration) throws Exception {
-
-		LossSummary lossSummary = new LossSummary();
-		lossSummary.setEquipment(equipment);
-		lossSummary.setStartTime(startTime);
-		lossSummary.setEndTime(endTime);
-		lossSummary.setReason(reason);
-		lossSummary.setDuration(duration);
-
-		AvailabilitySummary summary = new AvailabilitySummary(lossSummary);
-
-		PersistenceService.instance().persist(summary);
+	public SetupRecord getLastSetup(Equipment equipment) {
+		return PersistenceService.instance().fetchLastSetup(equipment);
 	}
 }
