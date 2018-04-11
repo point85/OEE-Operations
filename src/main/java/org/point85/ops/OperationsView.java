@@ -8,6 +8,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.point85.domain.DomainUtils;
+import org.point85.domain.collector.AvailabilityRecord;
+import org.point85.domain.collector.BaseRecord;
+import org.point85.domain.collector.ProductionRecord;
 import org.point85.domain.collector.SetupRecord;
 import org.point85.domain.plant.EntityLevel;
 import org.point85.domain.plant.Equipment;
@@ -18,8 +21,6 @@ import org.point85.domain.plant.Reason;
 import org.point85.domain.schedule.ShiftInstance;
 import org.point85.domain.schedule.WorkSchedule;
 import org.point85.domain.script.EventResolverType;
-import org.point85.domain.script.ResolvedEvent;
-import org.point85.domain.uom.Quantity;
 import org.point85.domain.uom.UnitOfMeasure;
 
 import com.vaadin.data.TreeData;
@@ -639,30 +640,51 @@ public class OperationsView extends VerticalLayout {
 		} else {
 			throw new Exception("An amount must be specified.");
 		}
-		
+
 		if (operationsPresenter.getResolverType() == null) {
 			throw new Exception("A production type must be selected.");
 		}
-		
+
 		UnitOfMeasure uom = (UnitOfMeasure) lbUOM.getData();
 
-		Quantity quantity = new Quantity(amount, uom);
+		ProductionRecord event = (ProductionRecord) createEvent(operationsPresenter.getResolverType(),
+				getSelectedEquipment(), dtfProductionTime1.getValue(), dtfProductionTime2.getValue());
 
-		ResolvedEvent event = createEvent(operationsPresenter.getResolverType(), getSelectedEquipment(), dtfProductionTime1.getValue(),
-				dtfProductionTime2.getValue());
-		event.setQuantity(quantity);
+		event.setAmount(amount);
+		event.setUOM(uom);
 
-		operationsPresenter.recordProductionEvent(event);
+		operationsPresenter.recordProductionEvent(((ProductionRecord) event));
 	}
 
-	private ResolvedEvent createEvent(EventResolverType type, Equipment equipment, LocalDateTime startTime, LocalDateTime endTime)
-			throws Exception {
+	private BaseRecord createEvent(EventResolverType type, Equipment equipment, LocalDateTime startTime,
+			LocalDateTime endTime) throws Exception {
 		if (type == null) {
 			throw new Exception("The event type must be specified.");
-			
+
 		}
-		ResolvedEvent event = new ResolvedEvent(equipment);
-		
+
+		BaseRecord event = null;
+		// ResolvedEvent event = new ResolvedEvent(equipment);
+		switch (type) {
+		case AVAILABILITY:
+			event = new AvailabilityRecord(equipment);
+			break;
+		case JOB_CHANGE:
+		case MATL_CHANGE:
+			event = new SetupRecord(equipment);
+			break;
+		case OTHER:
+			break;
+		case PROD_GOOD:
+		case PROD_REJECT:
+		case PROD_STARTUP:
+			event = new ProductionRecord(equipment);
+			break;
+		default:
+			break;
+
+		}
+
 		event.setResolverType(type);
 
 		event.setStartTime(DomainUtils.fromLocalDateTime(startTime));
@@ -688,7 +710,8 @@ public class OperationsView extends VerticalLayout {
 			throw new Exception("Material and/or a job must be specified.");
 		}
 
-		ResolvedEvent event = createEvent(EventResolverType.MATL_CHANGE, getSelectedEquipment(), dtfSetupTime.getValue(), null);
+		SetupRecord event = (SetupRecord) createEvent(EventResolverType.MATL_CHANGE, getSelectedEquipment(),
+				dtfSetupTime.getValue(), null);
 		event.setJob(job);
 		event.setMaterial(material);
 
@@ -724,8 +747,8 @@ public class OperationsView extends VerticalLayout {
 			duration = Duration.ofSeconds(seconds);
 		}
 
-		ResolvedEvent event = createEvent(EventResolverType.AVAILABILITY, getSelectedEquipment(), dtfAvailabilityStart.getValue(),
-				dtfAvailabilityEnd.getValue());
+		AvailabilityRecord event = (AvailabilityRecord) createEvent(EventResolverType.AVAILABILITY,
+				getSelectedEquipment(), dtfAvailabilityStart.getValue(), dtfAvailabilityEnd.getValue());
 		event.setReason(reason);
 		event.setDuration(duration);
 

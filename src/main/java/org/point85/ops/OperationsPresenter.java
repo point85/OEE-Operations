@@ -4,15 +4,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.point85.domain.collector.AvailabilityRecord;
 import org.point85.domain.collector.CollectorExceptionListener;
 import org.point85.domain.collector.CollectorServer;
+import org.point85.domain.collector.ProductionRecord;
 import org.point85.domain.collector.SetupRecord;
 import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.Equipment;
 import org.point85.domain.plant.PlantEntity;
 import org.point85.domain.plant.Reason;
 import org.point85.domain.script.EventResolverType;
-import org.point85.domain.script.ResolvedEvent;
 
 import com.vaadin.data.TreeData;
 import com.vaadin.data.provider.TreeDataProvider;
@@ -77,12 +78,13 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		// An initial entity tree
 		TreeData<EntityNode> treeData = new TreeData<>();
 
-		// add the roots 
+		// add the roots
 		treeData.addItems(null, entityNodes);
-		//entityNodes.forEach(entityNode -> treeData.addItems(entityNode, entityNode.getChildren()));
+		// entityNodes.forEach(entityNode -> treeData.addItems(entityNode,
+		// entityNode.getChildren()));
 
 		TreeDataProvider<EntityNode> dataProvider = new TreeDataProvider<>(treeData);
-		entityTree.setDataProvider(dataProvider);		
+		entityTree.setDataProvider(dataProvider);
 	}
 
 	void populateReasonGrid(TreeGrid<Reason> reasonTreeGrid) {
@@ -118,15 +120,15 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		operationsView.onException(e);
 	}
 
-	void recordProductionEvent(ResolvedEvent event) throws Exception {
+	void recordProductionEvent(ProductionRecord event) throws Exception {
 		collectorServer.saveProductionRecord(event);
 	}
 
-	void recordSetupEvent(ResolvedEvent event) throws Exception {
+	void recordSetupEvent(SetupRecord event) throws Exception {
 		collectorServer.saveSetupRecord(event);
 	}
 
-	void recordAvailabilityEvent(ResolvedEvent event) throws Exception {
+	void recordAvailabilityEvent(AvailabilityRecord event) throws Exception {
 		collectorServer.saveAvailabilityRecord(event);
 	}
 
