@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.point85.domain.collector.AvailabilityRecord;
+import org.point85.domain.collector.AvailabilityEvent;
 import org.point85.domain.collector.CollectorExceptionListener;
 import org.point85.domain.collector.CollectorServer;
-import org.point85.domain.collector.ProductionRecord;
-import org.point85.domain.collector.SetupRecord;
+import org.point85.domain.collector.ProductionEvent;
+import org.point85.domain.collector.SetupEvent;
 import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.Equipment;
 import org.point85.domain.plant.PlantEntity;
@@ -120,19 +120,19 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		operationsView.onException(e);
 	}
 
-	void recordProductionEvent(ProductionRecord event) throws Exception {
+	void recordProductionEvent(ProductionEvent event) throws Exception {
 		collectorServer.saveProductionRecord(event);
 	}
 
-	void recordSetupEvent(SetupRecord event) throws Exception {
+	void recordSetupEvent(SetupEvent event) throws Exception {
 		collectorServer.saveSetupRecord(event);
 	}
 
-	void recordAvailabilityEvent(AvailabilityRecord event) throws Exception {
+	void recordAvailabilityEvent(AvailabilityEvent event) throws Exception {
 		collectorServer.saveAvailabilityRecord(event);
 	}
 
-	public SetupRecord getLastSetup(Equipment equipment) {
+	public SetupEvent getLastSetup(Equipment equipment) {
 		return PersistenceService.instance().fetchLastSetup(equipment);
 	}
 }
