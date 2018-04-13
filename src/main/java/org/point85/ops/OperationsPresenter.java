@@ -121,15 +121,15 @@ public class OperationsPresenter implements CollectorExceptionListener {
 	}
 
 	void recordProductionEvent(ProductionEvent event) throws Exception {
-		collectorServer.saveProductionRecord(event);
+		collectorServer.saveProductionEvent(event);
 	}
 
 	void recordSetupEvent(SetupEvent event) throws Exception {
-		collectorServer.saveSetupRecord(event);
+		collectorServer.saveSetupEvent(event);
 	}
 
 	void recordAvailabilityEvent(AvailabilityEvent event) throws Exception {
-		collectorServer.saveAvailabilityRecord(event);
+		collectorServer.saveAvailabilityEvent(event);
 	}
 
 	public SetupEvent getLastSetup(Equipment equipment) {
