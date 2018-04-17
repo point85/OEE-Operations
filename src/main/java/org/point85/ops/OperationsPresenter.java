@@ -4,16 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.point85.domain.collector.AvailabilityEvent;
 import org.point85.domain.collector.CollectorExceptionListener;
 import org.point85.domain.collector.CollectorServer;
-import org.point85.domain.collector.ProductionEvent;
-import org.point85.domain.collector.SetupEvent;
+import org.point85.domain.collector.OeeEvent;
 import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.Equipment;
 import org.point85.domain.plant.PlantEntity;
 import org.point85.domain.plant.Reason;
-import org.point85.domain.script.EventResolverType;
+import org.point85.domain.script.EventType;
 
 import com.vaadin.data.TreeData;
 import com.vaadin.data.provider.TreeDataProvider;
@@ -22,7 +20,7 @@ import com.vaadin.ui.TreeGrid;
 
 public class OperationsPresenter implements CollectorExceptionListener {
 	// type of event resolver
-	private EventResolverType resolverType;
+	private EventType resolverType;
 
 	// event data collector
 	private CollectorServer collectorServer;
@@ -37,11 +35,11 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		collectorServer = new CollectorServer();
 	}
 
-	void setResolverType(EventResolverType resolverType) {
+	void setResolverType(EventType resolverType) {
 		this.resolverType = resolverType;
 	}
 
-	EventResolverType getResolverType() {
+	EventType getResolverType() {
 		return this.resolverType;
 	}
 
@@ -120,19 +118,11 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		operationsView.onException(e);
 	}
 
-	void recordProductionEvent(ProductionEvent event) throws Exception {
-		collectorServer.saveProductionEvent(event);
+	public void recordEvent(OeeEvent event) throws Exception {
+		this.collectorServer.saveOeeEvent(event);
 	}
 
-	void recordSetupEvent(SetupEvent event) throws Exception {
-		collectorServer.saveSetupEvent(event);
-	}
-
-	void recordAvailabilityEvent(AvailabilityEvent event) throws Exception {
-		collectorServer.saveAvailabilityEvent(event);
-	}
-
-	public SetupEvent getLastSetup(Equipment equipment) {
+	public OeeEvent getLastSetup(Equipment equipment) {
 		return PersistenceService.instance().fetchLastSetup(equipment);
 	}
 }
