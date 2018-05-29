@@ -17,7 +17,7 @@ import org.point85.domain.plant.PlantEntity;
 import org.point85.domain.plant.Reason;
 import org.point85.domain.schedule.ShiftInstance;
 import org.point85.domain.schedule.WorkSchedule;
-import org.point85.domain.script.EventType;
+import org.point85.domain.script.OeeEventType;
 import org.point85.domain.uom.UnitOfMeasure;
 
 import com.vaadin.data.TreeData;
@@ -653,15 +653,15 @@ public class OperationsView extends VerticalLayout {
 		operationsPresenter.recordEvent(event);
 	}
 
-	private OeeEvent createEvent(EventType type, Equipment equipment, LocalDateTime startTime,
-			LocalDateTime endTime) throws Exception {
+	private OeeEvent createEvent(OeeEventType type, Equipment equipment, LocalDateTime startTime, LocalDateTime endTime)
+			throws Exception {
 		if (type == null) {
 			throw new Exception("The event type must be specified.");
 
 		}
 
 		OeeEvent event = new OeeEvent(equipment);
-		event.setResolverType(type);
+		event.setEventType(type);
 		event.setStartTime(DomainUtils.fromLocalDateTime(startTime));
 		event.setEndTime(DomainUtils.fromLocalDateTime(endTime));
 
@@ -685,8 +685,8 @@ public class OperationsView extends VerticalLayout {
 			throw new Exception("Material and/or a job must be specified.");
 		}
 
-		OeeEvent event = (OeeEvent) createEvent(EventType.MATL_CHANGE, getSelectedEquipment(),
-				dtfSetupTime.getValue(), null);
+		OeeEvent event = (OeeEvent) createEvent(OeeEventType.MATL_CHANGE, getSelectedEquipment(), dtfSetupTime.getValue(),
+				null);
 		event.setJob(job);
 		event.setMaterial(material);
 
@@ -722,7 +722,7 @@ public class OperationsView extends VerticalLayout {
 			duration = Duration.ofSeconds(seconds);
 		}
 
-		OeeEvent event = (OeeEvent) createEvent(EventType.AVAILABILITY, getSelectedEquipment(),
+		OeeEvent event = (OeeEvent) createEvent(OeeEventType.AVAILABILITY, getSelectedEquipment(),
 				dtfAvailabilityStart.getValue(), dtfAvailabilityEnd.getValue());
 		event.setReason(reason);
 		event.setDuration(duration);
@@ -771,13 +771,13 @@ public class OperationsView extends VerticalLayout {
 			throw new Exception("The equipment settings for material " + material.getName() + " have not been defined");
 		}
 
-		EventType resolverType = null;
+		OeeEventType resolverType = null;
 		if (type.equals(PROD_GOOD)) {
-			resolverType = EventType.PROD_GOOD;
+			resolverType = OeeEventType.PROD_GOOD;
 		} else if (type.equals(PROD_REJECT)) {
-			resolverType = EventType.PROD_REJECT;
+			resolverType = OeeEventType.PROD_REJECT;
 		} else if (type.equals(PROD_STARTUP)) {
-			resolverType = EventType.PROD_STARTUP;
+			resolverType = OeeEventType.PROD_STARTUP;
 		}
 
 		operationsPresenter.setResolverType(resolverType);

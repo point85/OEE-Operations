@@ -29,7 +29,6 @@ import com.vaadin.ui.themes.ValoTheme;
 // push UI changes from background threads
 @Push
 @Theme(ValoTheme.THEME_NAME)
-//@Theme("Point85")
 public class OperationsUI extends UI {
 	private static final long serialVersionUID = -4803764060046008577L;
 
@@ -74,7 +73,7 @@ public class OperationsUI extends UI {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			operationsView.onException(e);
+			logger.error(e.getMessage());
 			operationsView.shutdownCollector();
 		}
 	}

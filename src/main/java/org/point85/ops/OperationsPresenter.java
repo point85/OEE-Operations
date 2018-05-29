@@ -11,7 +11,7 @@ import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.Equipment;
 import org.point85.domain.plant.PlantEntity;
 import org.point85.domain.plant.Reason;
-import org.point85.domain.script.EventType;
+import org.point85.domain.script.OeeEventType;
 
 import com.vaadin.data.TreeData;
 import com.vaadin.data.provider.TreeDataProvider;
@@ -20,7 +20,7 @@ import com.vaadin.ui.TreeGrid;
 
 public class OperationsPresenter implements CollectorExceptionListener {
 	// type of event resolver
-	private EventType resolverType;
+	private OeeEventType resolverType;
 
 	// event data collector
 	private CollectorServer collectorServer;
@@ -35,11 +35,11 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		collectorServer = new CollectorServer();
 	}
 
-	void setResolverType(EventType resolverType) {
+	void setResolverType(OeeEventType resolverType) {
 		this.resolverType = resolverType;
 	}
 
-	EventType getResolverType() {
+	OeeEventType getResolverType() {
 		return this.resolverType;
 	}
 
@@ -123,6 +123,6 @@ public class OperationsPresenter implements CollectorExceptionListener {
 	}
 
 	public OeeEvent getLastSetup(Equipment equipment) {
-		return PersistenceService.instance().fetchLastSetup(equipment);
+		return PersistenceService.instance().fetchLastEvent(equipment, OeeEventType.MATL_CHANGE);
 	}
 }

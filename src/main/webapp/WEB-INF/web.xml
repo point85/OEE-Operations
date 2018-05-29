@@ -12,19 +12,19 @@
     <!-- JDBC connection -->
    	<init-param>
       <param-name>jdbcConn</param-name>
-      <param-value>jdbc:sqlserver://localhost:1433;databaseName=OEE</param-value>
+      <param-value>jdbc:sqlserver://point85.database.windows.net:1433;databaseName=Point85</param-value>
     </init-param>
 
 	<!-- user name for JDBC connection -->
     <init-param>
       <param-name>userName</param-name>
-      <param-value>Point85</param-value>
+      <param-value>krandall@point85</param-value>
     </init-param>
     
     <!-- password for JDBC connection -->
     <init-param>
       <param-name>password</param-name>
-      <param-value>Point85</param-value>
+      <param-value>QWxpQ9vL%5tR</param-value>
     </init-param>
 
   </servlet>
