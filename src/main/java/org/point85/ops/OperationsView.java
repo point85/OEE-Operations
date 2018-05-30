@@ -444,6 +444,7 @@ public class OperationsView extends VerticalLayout {
 			}
 		} else {
 			// higher level, get the children
+			@SuppressWarnings("unchecked")
 			TreeDataProvider<EntityNode> dataProvider = (TreeDataProvider<EntityNode>) treeEntity.getDataProvider();
 			TreeData<EntityNode> treeData = dataProvider.getTreeData();
 
@@ -451,8 +452,6 @@ public class OperationsView extends VerticalLayout {
 
 			// add the node and its children
 			treeData.addItems(entityNode, children);
-			// children.forEach(entityNode -> treeData.addItems(entityNode,
-			// entityNode.getChildren()));
 		}
 
 		btnRecordAvailability.setEnabled(enabled);
@@ -685,8 +684,8 @@ public class OperationsView extends VerticalLayout {
 			throw new Exception("Material and/or a job must be specified.");
 		}
 
-		OeeEvent event = (OeeEvent) createEvent(OeeEventType.MATL_CHANGE, getSelectedEquipment(), dtfSetupTime.getValue(),
-				null);
+		OeeEvent event = (OeeEvent) createEvent(OeeEventType.MATL_CHANGE, getSelectedEquipment(),
+				dtfSetupTime.getValue(), null);
 		event.setJob(job);
 		event.setMaterial(material);
 

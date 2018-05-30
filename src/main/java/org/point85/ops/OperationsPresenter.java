@@ -33,6 +33,7 @@ public class OperationsPresenter implements CollectorExceptionListener {
 
 		// collector server
 		collectorServer = new CollectorServer();
+		collectorServer.setWebContainer(true);
 	}
 
 	void setResolverType(OeeEventType resolverType) {
@@ -78,8 +79,6 @@ public class OperationsPresenter implements CollectorExceptionListener {
 
 		// add the roots
 		treeData.addItems(null, entityNodes);
-		// entityNodes.forEach(entityNode -> treeData.addItems(entityNode,
-		// entityNode.getChildren()));
 
 		TreeDataProvider<EntityNode> dataProvider = new TreeDataProvider<>(treeData);
 		entityTree.setDataProvider(dataProvider);
@@ -118,8 +117,8 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		operationsView.onException(e);
 	}
 
-	public void recordEvent(OeeEvent event) throws Exception {
-		this.collectorServer.saveOeeEvent(event);
+	void recordEvent(OeeEvent event) throws Exception {
+		this.collectorServer.recordResolution(event);
 	}
 
 	public OeeEvent getLastSetup(Equipment equipment) {
