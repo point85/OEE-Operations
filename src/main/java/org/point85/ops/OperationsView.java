@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.point85.domain.DomainUtils;
 import org.point85.domain.collector.OeeEvent;
+import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.EntityLevel;
 import org.point85.domain.plant.Equipment;
 import org.point85.domain.plant.EquipmentMaterial;
@@ -647,15 +648,26 @@ public class OperationsView extends VerticalLayout {
 		LocalDateTime endTime = dtfProductionTime2.getValue();
 
 		String selectedItem = groupProductionSummary.getSelectedItem().get();
+
+		Duration duration = null;
 		if (selectedItem.equals(BY_EVENT)) {
 			endTime = null;
+		} else {
+			duration = Duration.between(startTime, endTime);
 		}
 
-		OeeEvent event = (OeeEvent) createEvent(operationsPresenter.getResolverType(), getSelectedEquipment(),
-				startTime, endTime);
+		OeeEvent event = createEvent(operationsPresenter.getResolverType(), getSelectedEquipment(), startTime, endTime);
 
+		event.setDuration(duration);
 		event.setAmount(amount);
 		event.setUOM(uom);
+
+		// material being produced
+		OeeEvent setup = PersistenceService.instance().fetchLastEvent(getSelectedEquipment(), OeeEventType.MATL_CHANGE);
+
+		if (setup != null) {
+			event.setMaterial(setup.getMaterial());
+		}
 
 		operationsPresenter.recordEvent(event);
 	}
@@ -691,8 +703,7 @@ public class OperationsView extends VerticalLayout {
 			throw new Exception("Material and/or a job must be specified.");
 		}
 
-		OeeEvent event = (OeeEvent) createEvent(OeeEventType.MATL_CHANGE, getSelectedEquipment(),
-				dtfSetupTime.getValue(), null);
+		OeeEvent event = createEvent(OeeEventType.MATL_CHANGE, getSelectedEquipment(), dtfSetupTime.getValue(), null);
 		event.setJob(job);
 		event.setMaterial(material);
 
@@ -734,9 +745,16 @@ public class OperationsView extends VerticalLayout {
 			endTime = null;
 		}
 
-		OeeEvent event = (OeeEvent) createEvent(OeeEventType.AVAILABILITY, getSelectedEquipment(), startTime, endTime);
+		OeeEvent event = createEvent(OeeEventType.AVAILABILITY, getSelectedEquipment(), startTime, endTime);
 		event.setReason(reason);
 		event.setDuration(duration);
+
+		// material being produced
+		OeeEvent setup = PersistenceService.instance().fetchLastEvent(getSelectedEquipment(), OeeEventType.MATL_CHANGE);
+
+		if (setup != null) {
+			event.setMaterial(setup.getMaterial());
+		}
 
 		operationsPresenter.recordEvent(event);
 	}
