@@ -643,8 +643,16 @@ public class OperationsView extends VerticalLayout {
 
 		UnitOfMeasure uom = (UnitOfMeasure) lbUOM.getData();
 
+		LocalDateTime startTime = dtfProductionTime1.getValue();
+		LocalDateTime endTime = dtfProductionTime2.getValue();
+
+		String selectedItem = groupProductionSummary.getSelectedItem().get();
+		if (selectedItem.equals(BY_EVENT)) {
+			endTime = null;
+		}
+
 		OeeEvent event = (OeeEvent) createEvent(operationsPresenter.getResolverType(), getSelectedEquipment(),
-				dtfProductionTime1.getValue(), dtfProductionTime2.getValue());
+				startTime, endTime);
 
 		event.setAmount(amount);
 		event.setUOM(uom);
@@ -656,7 +664,6 @@ public class OperationsView extends VerticalLayout {
 			throws Exception {
 		if (type == null) {
 			throw new Exception("The event type must be specified.");
-
 		}
 
 		OeeEvent event = new OeeEvent(equipment);
@@ -703,10 +710,13 @@ public class OperationsView extends VerticalLayout {
 		}
 
 		// duration
+		LocalDateTime startTime = dtfAvailabilityStart.getValue();
+		LocalDateTime endTime = dtfAvailabilityEnd.getValue();
+
 		Duration duration = null;
 
 		String selectedItem = groupAvailabilitySummary.getSelectedItem().get();
-		if (!selectedItem.equals(BY_EVENT)) {
+		if (selectedItem.equals(SUMMARIZED)) {
 			// specified duration
 			int seconds = 0;
 
@@ -719,10 +729,12 @@ public class OperationsView extends VerticalLayout {
 			}
 
 			duration = Duration.ofSeconds(seconds);
+		} else {
+			// by event (no end time)
+			endTime = null;
 		}
 
-		OeeEvent event = (OeeEvent) createEvent(OeeEventType.AVAILABILITY, getSelectedEquipment(),
-				dtfAvailabilityStart.getValue(), dtfAvailabilityEnd.getValue());
+		OeeEvent event = (OeeEvent) createEvent(OeeEventType.AVAILABILITY, getSelectedEquipment(), startTime, endTime);
 		event.setReason(reason);
 		event.setDuration(duration);
 
