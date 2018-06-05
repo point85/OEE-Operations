@@ -77,7 +77,6 @@ public class OperationsView extends VerticalLayout {
 	// production
 	private RadioButtonGroup<String> groupProductionSummary;
 	private Button btnRecordProduction;
-	private RadioButtonGroup<String> groupProductionType;
 	private TextField tfAmount;
 	private DateTimeField dtfProductionTime1;
 	private DateTimeField dtfProductionTime2;
@@ -93,10 +92,10 @@ public class OperationsView extends VerticalLayout {
 	private DateTimeField dtfSetupTime;
 
 	// the presenter
-	private OperationsPresenter operationsPresenter;
+	private final OperationsPresenter operationsPresenter;
 
 	// the UI
-	private OperationsUI ui;
+	private final OperationsUI ui;
 
 	public OperationsView(OperationsUI ui) {
 		// the UI
@@ -249,7 +248,7 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
-		groupProductionType = new RadioButtonGroup<>("Production Type");
+		RadioButtonGroup<String> groupProductionType = new RadioButtonGroup<>("Production Type");
 		groupProductionType.setItems(PROD_GOOD, PROD_REJECT, PROD_STARTUP);
 		groupProductionType.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
 		groupProductionType.setRequiredIndicatorVisible(true);
@@ -462,6 +461,7 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private Component createReasonTreeLayout() {
+		// tree view of reasons
 		treeGridReason = new TreeGrid<>();
 		treeGridReason.setCaption("Reasons");
 		treeGridReason.setHeightByRows(6);
@@ -476,14 +476,30 @@ public class OperationsView extends VerticalLayout {
 			tfReason.setData(reason);
 		});
 
+		// refresh reasons
+		Button btnRefreshReasons = new Button();
+		btnRefreshReasons.setIcon(VaadinIcons.REFRESH);
+		btnRefreshReasons.setEnabled(true);
+		btnRefreshReasons.setStyleName(ValoTheme.BUTTON_ICON_ONLY);
+		btnRefreshReasons.addClickListener(event -> {
+			try {
+				operationsPresenter.populateReasonGrid(treeGridReason);
+			} catch (Exception e) {
+				showException(e);
+			}
+		});
+
 		HorizontalLayout layout = new HorizontalLayout();
+		layout.addComponent(btnRefreshReasons);
 		layout.addComponentsAndExpand(treeGridReason);
+
 		layout.setMargin(true);
 
 		return layout;
 	}
 
 	private Component createMaterialTreeLayout() {
+		// materials by category
 		treeGridMaterial = new TreeGrid<>();
 		treeGridMaterial.setCaption("Material");
 		treeGridMaterial.setHeightByRows(6);
@@ -501,7 +517,21 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
+		// refresh materials
+		Button btnRefreshMaterials = new Button();
+		btnRefreshMaterials.setIcon(VaadinIcons.REFRESH);
+		btnRefreshMaterials.setEnabled(true);
+		btnRefreshMaterials.setStyleName(ValoTheme.BUTTON_ICON_ONLY);
+		btnRefreshMaterials.addClickListener(event -> {
+			try {
+				operationsPresenter.populateMaterialGrid(treeGridMaterial);
+			} catch (Exception e) {
+				showException(e);
+			}
+		});
+
 		HorizontalLayout layout = new HorizontalLayout();
+		layout.addComponent(btnRefreshMaterials);
 		layout.addComponentsAndExpand(treeGridMaterial);
 		layout.setMargin(true);
 
@@ -550,7 +580,6 @@ public class OperationsView extends VerticalLayout {
 		btnRecordAvailability.setIcon(VaadinIcons.NOTEBOOK);
 		btnRecordAvailability.setEnabled(false);
 		btnRecordAvailability.setStyleName(ValoTheme.BUTTON_PRIMARY);
-		btnRecordAvailability.setDescription("Button description");
 		btnRecordAvailability.addClickListener(event -> {
 			try {
 				recordAvailabilityEvent();
@@ -614,7 +643,7 @@ public class OperationsView extends VerticalLayout {
 
 		Set<EntityNode> entityNodes = treeEntity.getSelectedItems();
 
-		if (entityNodes.size() == 0) {
+		if (entityNodes.isEmpty()) {
 			return equipment;
 		}
 
@@ -686,7 +715,7 @@ public class OperationsView extends VerticalLayout {
 		WorkSchedule schedule = equipment.findWorkSchedule();
 		List<ShiftInstance> shifts = schedule.getShiftInstancesForTime(startTime);
 
-		if (shifts.size() > 0) {
+		if (!shifts.isEmpty()) {
 			event.setShift(shifts.get(0).getShift());
 		}
 		return event;
@@ -825,13 +854,10 @@ public class OperationsView extends VerticalLayout {
 	// callback
 	void onException(Exception e) {
 		// put on UI thread
-		ui.access(new Runnable() {
-			@Override
-			public void run() {
-				showException(e);
-			}
-		});
-
+		Runnable exceptionTask = () -> {
+			showException(e);
+		};
+		ui.access(exceptionTask);
 	}
 
 	private void showException(Exception e) {
@@ -842,12 +868,8 @@ public class OperationsView extends VerticalLayout {
 		operationsPresenter.startupCollector();
 	}
 
-	void shutdownCollector() {
-		try {
-			operationsPresenter.shutdownCollector();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	void shutdownCollector() throws Exception {
+		operationsPresenter.shutdownCollector();
 	}
 
 }

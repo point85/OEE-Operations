@@ -23,10 +23,10 @@ public class OperationsPresenter implements CollectorExceptionListener {
 	private OeeEventType resolverType;
 
 	// event data collector
-	private CollectorServer collectorServer;
+	private final CollectorServer collectorServer;
 
 	// view
-	private OperationsView operationsView;
+	private final OperationsView operationsView;
 
 	OperationsPresenter(OperationsView view) {
 		this.operationsView = view;
@@ -105,7 +105,7 @@ public class OperationsPresenter implements CollectorExceptionListener {
 			try {
 				materials = source.getMaterialsInCategory();
 			} catch (Exception e) {
-				e.printStackTrace();
+				onException(e);
 			}
 			return materials;
 		});

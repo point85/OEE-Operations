@@ -35,9 +35,6 @@ public class OperationsUI extends UI {
 	// logger
 	private static final Logger logger = LoggerFactory.getLogger(OperationsUI.class);
 
-	// the view
-	private OperationsView operationsView;
-
 	@Override
 	protected void init(VaadinRequest vaadinRequest) {
 		// see web.xml for JDBC connection properties
@@ -62,23 +59,26 @@ public class OperationsUI extends UI {
 		if (logger.isInfoEnabled()) {
 			logger.info("Launching UI.");
 		}
-		try {
-			operationsView = new OperationsView(this);
-			operationsView.setSizeFull();
-			operationsView.setMargin(true);
-			setContent(operationsView);
 
+		// the view
+		OperationsView operationsView = new OperationsView(this);
+		operationsView.setSizeFull();
+		operationsView.setMargin(true);
+		setContent(operationsView);
+		try {
 			// start the data collector
 			operationsView.startupCollector();
-
 		} catch (Exception e) {
-			e.printStackTrace();
 			logger.error(e.getMessage());
-			operationsView.shutdownCollector();
+			try {
+				operationsView.shutdownCollector();
+			} catch (Exception any) {
+				logger.error(any.getMessage());
+			}
 		}
 	}
 
-	@WebServlet(urlPatterns = {"/*"}, name = "OEEOperationsServlet", asyncSupported = true)
+	@WebServlet(urlPatterns = { "/*" }, name = "OEEOperationsServlet", asyncSupported = true)
 	@VaadinServletConfiguration(ui = OperationsUI.class, productionMode = false)
 	public static class OEEOperationsServlet extends VaadinServlet {
 		private static final long serialVersionUID = 3872491814140753200L;

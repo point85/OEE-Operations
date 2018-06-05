@@ -6,7 +6,7 @@ import java.util.Set;
 import org.point85.domain.plant.PlantEntity;
 
 public class EntityNode {
-	private PlantEntity entity;
+	private final PlantEntity entity;
 
 	EntityNode(PlantEntity entity) {
 		this.entity = entity;
