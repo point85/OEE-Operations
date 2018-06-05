@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.point85.domain.collector.CollectorExceptionListener;
-import org.point85.domain.collector.CollectorServer;
+import org.point85.domain.collector.CollectorService;
 import org.point85.domain.collector.OeeEvent;
 import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.Equipment;
@@ -23,7 +23,7 @@ public class OperationsPresenter implements CollectorExceptionListener {
 	private OeeEventType resolverType;
 
 	// event data collector
-	private final CollectorServer collectorServer;
+	private final CollectorService collectorServer;
 
 	// view
 	private final OperationsView operationsView;
@@ -32,7 +32,7 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		this.operationsView = view;
 
 		// collector server
-		collectorServer = new CollectorServer();
+		collectorServer = new CollectorService();
 		collectorServer.setWebContainer(true);
 	}
 
@@ -44,7 +44,7 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		return this.resolverType;
 	}
 
-	CollectorServer getCollectorServer() {
+	CollectorService getCollectorServer() {
 		return collectorServer;
 	}
 
