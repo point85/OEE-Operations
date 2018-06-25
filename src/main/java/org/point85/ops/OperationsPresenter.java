@@ -23,7 +23,7 @@ public class OperationsPresenter implements CollectorExceptionListener {
 	private OeeEventType resolverType;
 
 	// event data collector
-	private final CollectorService collectorServer;
+	private final CollectorService collectorService;
 
 	// view
 	private final OperationsView operationsView;
@@ -32,8 +32,8 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		this.operationsView = view;
 
 		// collector server
-		collectorServer = new CollectorService();
-		collectorServer.setWebContainer(true);
+		collectorService = new CollectorService();
+		collectorService.setWebContainer(true);
 	}
 
 	void setResolverType(OeeEventType resolverType) {
@@ -44,21 +44,21 @@ public class OperationsPresenter implements CollectorExceptionListener {
 		return this.resolverType;
 	}
 
-	CollectorService getCollectorServer() {
-		return collectorServer;
+	CollectorService getCollectorService() {
+		return collectorService;
 	}
 
 	void startupCollector() throws Exception {
 		// register for exceptions
-		collectorServer.registerExceptionLisener(this);
+		collectorService.registerExceptionLisener(this);
 
 		// startup server
-		collectorServer.startup();
+		collectorService.startup();
 	}
 
 	void shutdownCollector() throws Exception {
-		if (collectorServer != null) {
-			collectorServer.shutdown();
+		if (collectorService != null) {
+			collectorService.shutdown();
 		}
 	}
 
@@ -118,7 +118,7 @@ public class OperationsPresenter implements CollectorExceptionListener {
 	}
 
 	void recordEvent(OeeEvent event) throws Exception {
-		this.collectorServer.recordResolution(event);
+		this.collectorService.recordResolution(event);
 	}
 
 	public OeeEvent getLastSetup(Equipment equipment) {

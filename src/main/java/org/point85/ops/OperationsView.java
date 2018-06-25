@@ -712,11 +712,15 @@ public class OperationsView extends VerticalLayout {
 		event.setStartTime(DomainUtils.fromLocalDateTime(startTime));
 		event.setEndTime(DomainUtils.fromLocalDateTime(endTime));
 
+		// get the shift from the work schedule
 		WorkSchedule schedule = equipment.findWorkSchedule();
-		List<ShiftInstance> shifts = schedule.getShiftInstancesForTime(startTime);
 
-		if (!shifts.isEmpty()) {
-			event.setShift(shifts.get(0).getShift());
+		if (schedule != null) {
+			List<ShiftInstance> shifts = schedule.getShiftInstancesForTime(startTime);
+
+			if (!shifts.isEmpty()) {
+				event.setShift(shifts.get(0).getShift());
+			}
 		}
 		return event;
 	}

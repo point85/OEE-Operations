@@ -49,11 +49,15 @@ public class OperationsUI extends UI {
 		String log4jProps = realPath + "/log4j.properties";
 		PropertyConfigurator.configure(log4jProps);
 
-		// create the EMF
 		if (logger.isInfoEnabled()) {
-			logger.info("Initializing persistence service.");
+			logger.info("Initializing persistence service for connection " + jdbcConn + " and user " + userName);
 		}
+		
+		// create the EMF on background thread
 		PersistenceService.instance().initialize(jdbcConn, userName, password);
+		
+		// block on getting the database connection established
+		PersistenceService.instance().getEntityManager();
 
 		// main UI form
 		if (logger.isInfoEnabled()) {
@@ -66,6 +70,10 @@ public class OperationsUI extends UI {
 		operationsView.setMargin(true);
 		setContent(operationsView);
 		try {
+			if (logger.isInfoEnabled()) {
+				logger.info("Starting collector.");
+			}
+			
 			// start the data collector
 			operationsView.startupCollector();
 		} catch (Exception e) {

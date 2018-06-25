@@ -1,31 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app
-  id="WebApp_ID" version="3.0"
-  xmlns="http://java.sun.com/xml/ns/j2ee"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-      http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:web="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
   <servlet>
     <servlet-name>OEEOperationsServlet</servlet-name>
-    
-    <!-- JDBC connection -->
-   	<init-param>
+    <init-param>
       <param-name>jdbcConn</param-name>
-      <param-value>jdbc:sqlserver://point85.database.windows.net:1433;databaseName=Point85</param-value>
+      <param-value>jdbc:sqlserver://localhost:1433;databaseName=OEE</param-value>
     </init-param>
-
-	<!-- user name for JDBC connection -->
     <init-param>
       <param-name>userName</param-name>
-      <param-value>krandall@point85</param-value>
+      <param-value>Point85</param-value>
     </init-param>
-    
-    <!-- password for JDBC connection -->
     <init-param>
       <param-name>password</param-name>
-      <param-value>QWxpQ9vL%5tR</param-value>
+      <param-value>Point85</param-value>
     </init-param>
-
   </servlet>
 </web-app>
