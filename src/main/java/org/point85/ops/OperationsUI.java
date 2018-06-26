@@ -36,7 +36,7 @@ public class OperationsUI extends UI {
 	private static final Logger logger = LoggerFactory.getLogger(OperationsUI.class);
 
 	@Override
-	protected void init(VaadinRequest vaadinRequest) {
+	protected void init(VaadinRequest vaadinRequest) {		
 		// see web.xml for JDBC connection properties
 		ServletConfig config = OEEOperationsServlet.getCurrent().getServletConfig();
 		String jdbcConn = config.getInitParameter("jdbcConn");

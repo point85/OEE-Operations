@@ -426,6 +426,7 @@ public class OperationsView extends VerticalLayout {
 
 	private void onSelectEntity(EntityNode entityNode) throws Exception {
 		// clear fields
+		updateMaterialJob(null, null);
 		clearAvailability();
 		clearProduction();
 		clearSetup();
