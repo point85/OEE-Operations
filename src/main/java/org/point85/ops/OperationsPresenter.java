@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.point85.domain.collector.CollectorExceptionListener;
-import org.point85.domain.collector.CollectorService;
 import org.point85.domain.collector.OeeEvent;
 import org.point85.domain.persistence.PersistenceService;
 import org.point85.domain.plant.Equipment;
@@ -18,48 +16,12 @@ import com.vaadin.data.provider.TreeDataProvider;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.TreeGrid;
 
-public class OperationsPresenter implements CollectorExceptionListener {
-	// type of event resolver
-	private OeeEventType resolverType;
-
-	// event data collector
-	private final CollectorService collectorService;
-
+public class OperationsPresenter  {
 	// view
 	private final OperationsView operationsView;
 
 	OperationsPresenter(OperationsView view) {
 		this.operationsView = view;
-
-		// collector server
-		collectorService = new CollectorService();
-		collectorService.setWebContainer(true);
-	}
-
-	void setResolverType(OeeEventType resolverType) {
-		this.resolverType = resolverType;
-	}
-
-	OeeEventType getResolverType() {
-		return this.resolverType;
-	}
-
-	CollectorService getCollectorService() {
-		return collectorService;
-	}
-
-	void startupCollector() throws Exception {
-		// register for exceptions
-		collectorService.registerExceptionLisener(this);
-
-		// startup server
-		collectorService.startup();
-	}
-
-	void shutdownCollector() throws Exception {
-		if (collectorService != null) {
-			collectorService.shutdown();
-		}
 	}
 
 	void populateTopEntityNodes(Tree<EntityNode> entityTree) {
@@ -112,13 +74,8 @@ public class OperationsPresenter implements CollectorExceptionListener {
 	}
 
 	// callback
-	@Override
-	public void onException(Exception e) {
+	void onException(Exception e) {
 		operationsView.onException(e);
-	}
-
-	void recordEvent(OeeEvent event) throws Exception {
-		this.collectorService.recordResolution(event);
 	}
 
 	public OeeEvent getLastSetup(Equipment equipment) {

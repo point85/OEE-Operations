@@ -76,6 +76,7 @@ public class OperationsView extends VerticalLayout {
 
 	// production
 	private RadioButtonGroup<String> groupProductionSummary;
+	private RadioButtonGroup<String> groupProductionType;
 	private Button btnRecordProduction;
 	private TextField tfAmount;
 	private DateTimeField dtfProductionTime1;
@@ -248,7 +249,7 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
-		RadioButtonGroup<String> groupProductionType = new RadioButtonGroup<>("Production Type");
+		groupProductionType = new RadioButtonGroup<>("Production Type");
 		groupProductionType.setItems(PROD_GOOD, PROD_REJECT, PROD_STARTUP);
 		groupProductionType.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
 		groupProductionType.setRequiredIndicatorVisible(true);
@@ -658,6 +659,23 @@ public class OperationsView extends VerticalLayout {
 		return equipment;
 	}
 
+	private OeeEventType getProductionType() {
+		OeeEventType resolverType = null;
+
+		if (groupProductionType.getSelectedItem().isPresent()) {
+			String type = groupProductionType.getSelectedItem().get();
+
+			if (type.equals(PROD_GOOD)) {
+				resolverType = OeeEventType.PROD_GOOD;
+			} else if (type.equals(PROD_REJECT)) {
+				resolverType = OeeEventType.PROD_REJECT;
+			} else if (type.equals(PROD_STARTUP)) {
+				resolverType = OeeEventType.PROD_STARTUP;
+			}
+		}
+		return resolverType;
+	}
+
 	private void recordProductionEvent() throws Exception {
 		// quantity produced
 		Double amount = null;
@@ -666,10 +684,6 @@ public class OperationsView extends VerticalLayout {
 			amount = Double.valueOf(tfAmount.getValue());
 		} else {
 			throw new Exception("An amount must be specified.");
-		}
-
-		if (operationsPresenter.getResolverType() == null) {
-			throw new Exception("A production type must be selected.");
 		}
 
 		UnitOfMeasure uom = (UnitOfMeasure) lbUOM.getData();
@@ -686,7 +700,7 @@ public class OperationsView extends VerticalLayout {
 			duration = Duration.between(startTime, endTime);
 		}
 
-		OeeEvent event = createEvent(operationsPresenter.getResolverType(), getSelectedEquipment(), startTime, endTime);
+		OeeEvent event = createEvent(getProductionType(), getSelectedEquipment(), startTime, endTime);
 
 		event.setDuration(duration);
 		event.setAmount(amount);
@@ -699,7 +713,7 @@ public class OperationsView extends VerticalLayout {
 			event.setMaterial(setup.getMaterial());
 		}
 
-		operationsPresenter.recordEvent(event);
+		AppServices.instance().recordEvent(event);
 	}
 
 	private OeeEvent createEvent(OeeEventType type, Equipment equipment, LocalDateTime startTime, LocalDateTime endTime)
@@ -721,6 +735,7 @@ public class OperationsView extends VerticalLayout {
 
 			if (!shifts.isEmpty()) {
 				event.setShift(shifts.get(0).getShift());
+				event.setTeam(shifts.get(0).getTeam());
 			}
 		}
 		return event;
@@ -741,7 +756,7 @@ public class OperationsView extends VerticalLayout {
 		event.setJob(job);
 		event.setMaterial(material);
 
-		operationsPresenter.recordEvent(event);
+		AppServices.instance().recordEvent(event);
 
 		updateMaterialJob(material, job);
 	}
@@ -790,7 +805,7 @@ public class OperationsView extends VerticalLayout {
 			event.setMaterial(setup.getMaterial());
 		}
 
-		operationsPresenter.recordEvent(event);
+		AppServices.instance().recordEvent(event);
 	}
 
 	private void onSelectAvailabilityData(String type) {
@@ -843,8 +858,6 @@ public class OperationsView extends VerticalLayout {
 			resolverType = OeeEventType.PROD_STARTUP;
 		}
 
-		operationsPresenter.setResolverType(resolverType);
-
 		UnitOfMeasure uom = equipment.getUOM(material, resolverType);
 		if (uom == null) {
 			throw new Exception("The unit of measure has not been defined for material " + material.getName()
@@ -868,13 +881,4 @@ public class OperationsView extends VerticalLayout {
 	private void showException(Exception e) {
 		Notification.show(e.getMessage(), Notification.Type.ERROR_MESSAGE);
 	}
-
-	void startupCollector() throws Exception {
-		operationsPresenter.startupCollector();
-	}
-
-	void shutdownCollector() throws Exception {
-		operationsPresenter.shutdownCollector();
-	}
-
 }
