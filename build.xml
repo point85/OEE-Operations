@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="oee-operations" default="copy-war" basedir="."  xmlns:fx="javafx:com.sun.javafx.tools.ant">
+	<property name="dist.dir" value="dist"/>
+	
+	<target name="copy-war">
+		<delete dir="${dist.dir}" />	
+		<mkdir dir="${dist.dir}" />
+		
+		<copy todir="${dist.dir}">
+			<fileset dir=".\target">
+				<include name="**/*.war" />
+			</fileset>
+		</copy>
+	</target>
+	
+</project>

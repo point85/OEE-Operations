@@ -5,9 +5,9 @@ import javax.servlet.annotation.WebServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.annotations.PreserveOnRefresh;
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Theme;
+import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
@@ -16,8 +16,7 @@ import com.vaadin.ui.themes.ValoTheme;
 
 // push UI changes from background threads
 @Push
-// preserve browser state on refresh
-@PreserveOnRefresh
+@Title("Point85 Operator")
 @Theme(ValoTheme.THEME_NAME)
 public class OperationsUI extends UI {
 	private static final long serialVersionUID = -4803764060046008577L;
