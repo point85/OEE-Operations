@@ -81,7 +81,7 @@ public class AppServices {
 		collectorService.startup();
 	}
 
-	private void shutdownCollector() throws Exception {
+	void shutdownCollector() throws Exception {
 		if (collectorService != null) {
 			collectorService.shutdown();
 		}

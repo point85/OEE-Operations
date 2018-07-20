@@ -2,6 +2,7 @@
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:web="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
   <servlet>
     <servlet-name>OEEOperationsServlet</servlet-name>
+	<servlet-class>org.point85.ops.OperationsUI$OEEOperationsServlet</servlet-class>
     <init-param>
       <param-name>jdbcConn</param-name>
       <param-value>jdbc:sqlserver://localhost:1433;databaseName=OEE</param-value>

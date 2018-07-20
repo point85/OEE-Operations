@@ -16,7 +16,7 @@ import com.vaadin.ui.themes.ValoTheme;
 
 // push UI changes from background threads
 @Push
-// preserve browswer state on refresh
+// preserve browser state on refresh
 @PreserveOnRefresh
 @Theme(ValoTheme.THEME_NAME)
 public class OperationsUI extends UI {

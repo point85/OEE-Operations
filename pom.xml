@@ -4,9 +4,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.point85</groupId>
-	<artifactId>OEE-Operations</artifactId>
+	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>1.0</version>
+	<version>1.0.0</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>
@@ -72,6 +72,7 @@
     <groupId>org.nanohttpd</groupId>
     <artifactId>nanohttpd</artifactId>
     <version>2.3.1</version>
+    <scope>runtime</scope>
 </dependency>
 
 <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
@@ -79,6 +80,7 @@
     <groupId>com.google.code.gson</groupId>
     <artifactId>gson</artifactId>
     <version>2.8.4</version>
+    <scope>runtime</scope>
 </dependency>
 
 <!--  OPC DA -->
@@ -88,9 +90,9 @@
     <groupId>org.openscada.jinterop</groupId>
     <artifactId>org.openscada.jinterop.deps</artifactId>
     <version>1.5.0</version>
+    <scope>runtime</scope>
     <exclusions>
         <exclusion>  
-            <!-- old slf4j-api -->
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </exclusion>
@@ -102,9 +104,9 @@
     <groupId>org.openscada.jinterop</groupId>
     <artifactId>org.openscada.jinterop.core</artifactId>
     <version>2.1.8</version>
+    <scope>runtime</scope>
     <exclusions>
         <exclusion>  
-            <!-- old slf4j-api -->
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </exclusion>
@@ -116,6 +118,7 @@
     <groupId>org.openscada.utgard</groupId>
     <artifactId>org.openscada.opc.dcom</artifactId>
     <version>1.5.0</version>
+    <scope>runtime</scope>
 </dependency>
 
 <!-- https://mvnrepository.com/artifact/org.openscada.utgard/org.openscada.opc.lib -->
@@ -123,14 +126,16 @@
     <groupId>org.openscada.utgard</groupId>
     <artifactId>org.openscada.opc.lib</artifactId>
     <version>1.5.0</version>
+    <scope>runtime</scope>
 </dependency>
-     
+    
 <!--  OPC UA -->
 <!-- https://mvnrepository.com/artifact/org.eclipse.milo/sdk-client -->
 <dependency>
     <groupId>org.eclipse.milo</groupId>
     <artifactId>sdk-client</artifactId>
     <version>0.2.1</version>
+    <scope>runtime</scope>
 </dependency>
 
 <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
@@ -138,6 +143,7 @@
     <groupId>org.bouncycastle</groupId>
     <artifactId>bcprov-jdk15on</artifactId>
     <version>1.50</version>
+    <scope>runtime</scope>
 </dependency>
 
 <!-- HIBERNATE JPA -->
@@ -252,6 +258,10 @@
 				<version>${jetty.plugin.version}</version>
 				<configuration>
 					<scanIntervalSeconds>2</scanIntervalSeconds>
+					<httpConnector>
+                    	<host>localhost</host>
+                     	<port>9888</port>
+                    </httpConnector>
 					<webAppConfig>
       					<contextPath>/</contextPath>
       					<webInfIncludeJarPattern>.*/oee-[^/]*\.jar$|.*/classes/.*</webInfIncludeJarPattern>
