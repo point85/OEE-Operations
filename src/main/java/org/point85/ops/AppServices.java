@@ -11,7 +11,7 @@ import org.point85.ops.OperationsUI.OEEOperationsServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AppServices {
+public final class AppServices {
 	// logger
 	private static final Logger logger = LoggerFactory.getLogger(OperationsUI.class);
 
