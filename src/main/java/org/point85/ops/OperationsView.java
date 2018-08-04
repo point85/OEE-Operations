@@ -794,6 +794,7 @@ public class OperationsView extends VerticalLayout {
 			endTime = null;
 		}
 
+		// create availability event
 		OeeEvent event = createEvent(OeeEventType.AVAILABILITY, getSelectedEquipment(), startTime, endTime);
 		event.setReason(reason);
 		event.setDuration(duration);
