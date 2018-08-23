@@ -65,7 +65,7 @@ public class OperationsView extends VerticalLayout {
 	// availability
 	private RadioButtonGroup<String> groupAvailabilitySummary;
 	private Button btnRecordAvailability;
-	private TextField tfReason;
+	private TextField tfAvailabilityReason;
 	private DateTimeField dtfAvailabilityStart;
 	private DateTimeField dtfAvailabilityEnd;
 	private TextField tfAvailabilityHours;
@@ -85,6 +85,7 @@ public class OperationsView extends VerticalLayout {
 	private Label lbMaterialId;
 	private Label lbMaterialDescription;
 	private Label lbJob;
+	private TextField tfQualityReason;
 
 	// setup/changeover
 	private Button btnRecordSetup;
@@ -295,9 +296,13 @@ public class OperationsView extends VerticalLayout {
 				showException(e);
 			}
 		});
+		
+		tfQualityReason = new TextField("Reason");
+		tfQualityReason.setIcon(VaadinIcons.PENCIL);
+		tfQualityReason.setRequiredIndicatorVisible(false);
 
 		HorizontalLayout quantityLayout = new HorizontalLayout();
-		quantityLayout.addComponents(groupProductionType, tfAmount, lbUOM);
+		quantityLayout.addComponents(groupProductionType, tfAmount, lbUOM, tfQualityReason);
 		quantityLayout.setMargin(false);
 
 		HorizontalLayout timeLayout = new HorizontalLayout();
@@ -389,13 +394,13 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private void clearAvailability() {
-		tfReason.clear();
+		tfAvailabilityReason.clear();
 		tfAvailabilityHours.clear();
 		tfAvailabilityMinutes.clear();
 	}
 
 	private void clearProduction() {
-		// groupProductionType.clear();
+		tfQualityReason.clear();
 		tfAmount.clear();
 		tfAmount.setEnabled(false);
 	}
@@ -474,8 +479,8 @@ public class OperationsView extends VerticalLayout {
 
 		treeGridReason.addItemClickListener(event -> {
 			Reason reason = event.getItem();
-			tfReason.setValue(reason.getName());
-			tfReason.setData(reason);
+			tfAvailabilityReason.setValue(reason.getName());
+			tfAvailabilityReason.setData(reason);
 		});
 
 		// refresh reasons
@@ -556,9 +561,9 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
-		tfReason = new TextField("Reason");
-		tfReason.setIcon(VaadinIcons.PENCIL);
-		tfReason.setRequiredIndicatorVisible(true);
+		tfAvailabilityReason = new TextField("Reason");
+		tfAvailabilityReason.setIcon(VaadinIcons.PENCIL);
+		tfAvailabilityReason.setRequiredIndicatorVisible(true);
 
 		dtfAvailabilityStart = new DateTimeField(EVENT_TIME);
 		dtfAvailabilityStart.setValue(LocalDateTime.now());
@@ -597,7 +602,7 @@ public class OperationsView extends VerticalLayout {
 
 		VerticalLayout availabilityLayout = new VerticalLayout();
 		availabilityLayout.setMargin(true);
-		availabilityLayout.addComponents(groupAvailabilitySummary, tfReason, timeLayout, btnRecordAvailability);
+		availabilityLayout.addComponents(groupAvailabilitySummary, tfAvailabilityReason, timeLayout, btnRecordAvailability);
 
 		return availabilityLayout;
 	}
@@ -699,12 +704,26 @@ public class OperationsView extends VerticalLayout {
 		} else {
 			duration = Duration.between(startTime, endTime);
 		}
-
+		
+		// reason
+		String reasonName = tfQualityReason.getValue();
+		Reason reason = null;
+		
+		if (reasonName != null) {
+			reason = PersistenceService.instance().fetchReasonByName(reasonName);
+			
+			if (reason == null) {
+				throw new Exception("The reason '" + reasonName + "' was not found in the database.");
+			}
+		}
+		
+		// the production event
 		OeeEvent event = createEvent(getProductionType(), getSelectedEquipment(), startTime, endTime);
 
 		event.setDuration(duration);
 		event.setAmount(amount);
 		event.setUOM(uom);
+		event.setReason(reason);
 
 		// material being produced
 		OeeEvent setup = PersistenceService.instance().fetchLastEvent(getSelectedEquipment(), OeeEventType.MATL_CHANGE);
@@ -763,7 +782,7 @@ public class OperationsView extends VerticalLayout {
 
 	private void recordAvailabilityEvent() throws Exception {
 		// reason
-		Reason reason = (Reason) tfReason.getData();
+		Reason reason = (Reason) tfAvailabilityReason.getData();
 
 		if (reason == null) {
 			throw new Exception("A reason must be selected.");

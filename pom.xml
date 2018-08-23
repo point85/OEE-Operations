@@ -6,7 +6,7 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>
@@ -197,7 +197,7 @@
 <dependency>
     <groupId>org.point85</groupId>
     <artifactId>oee-domain</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 
 	</dependencies>
