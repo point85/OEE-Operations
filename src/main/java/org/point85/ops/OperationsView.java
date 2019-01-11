@@ -709,7 +709,7 @@ public class OperationsView extends VerticalLayout {
 		String reasonName = tfQualityReason.getValue();
 		Reason reason = null;
 		
-		if (reasonName != null) {
+		if (reasonName != null && reasonName.length() > 0) {
 			reason = PersistenceService.instance().fetchReasonByName(reasonName);
 			
 			if (reason == null) {
@@ -767,8 +767,8 @@ public class OperationsView extends VerticalLayout {
 		// material
 		Material material = (Material) tfMaterial.getData();
 
-		if (job.trim().length() == 0 && material == null) {
-			throw new Exception("Material and/or a job must be specified.");
+		if (material == null) {
+			throw new Exception("Material must be specified.");
 		}
 
 		OeeEvent event = createEvent(OeeEventType.MATL_CHANGE, getSelectedEquipment(), dtfSetupTime.getValue(), null);
