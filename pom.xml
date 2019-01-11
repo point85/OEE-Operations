@@ -6,7 +6,7 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>1.4.0</version>
+	<version>1.4.1</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>
@@ -14,7 +14,7 @@
 	</prerequisites>
 
 	<properties>
-		<domain.version>1.4.0</domain.version>
+		<domain.version>1.4.1</domain.version>
 		<vaadin.version>8.6.3</vaadin.version>
 		<vaadin.plugin.version>8.6.3</vaadin.plugin.version>
 		<jetty.plugin.version>9.4.14.v20181114</jetty.plugin.version>
@@ -160,7 +160,7 @@
 <dependency>
     <groupId>org.hibernate</groupId>
     <artifactId>hibernate-hikaricp</artifactId>
-    <version>5.4.0.Final</version>
+    <version>5.3.7.Final</version>
 </dependency>
 
 <!-- LOGGING -->
