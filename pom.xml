@@ -6,7 +6,7 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>1.4.1</version>
+	<version>1.5.0</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>

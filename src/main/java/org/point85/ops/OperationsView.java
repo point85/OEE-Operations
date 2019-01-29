@@ -724,6 +724,7 @@ public class OperationsView extends VerticalLayout {
 		event.setAmount(amount);
 		event.setUOM(uom);
 		event.setReason(reason);
+		event.setInputValue(String.valueOf(amount));
 
 		// material being produced
 		OeeEvent setup = PersistenceService.instance().fetchLastEvent(getSelectedEquipment(), OeeEventType.MATL_CHANGE);
@@ -774,6 +775,7 @@ public class OperationsView extends VerticalLayout {
 		OeeEvent event = createEvent(OeeEventType.MATL_CHANGE, getSelectedEquipment(), dtfSetupTime.getValue(), null);
 		event.setJob(job);
 		event.setMaterial(material);
+		event.setInputValue(material.getName());
 
 		AppServices.instance().recordEvent(event);
 
@@ -817,6 +819,7 @@ public class OperationsView extends VerticalLayout {
 		OeeEvent event = createEvent(OeeEventType.AVAILABILITY, getSelectedEquipment(), startTime, endTime);
 		event.setReason(reason);
 		event.setDuration(duration);
+		event.setInputValue(reason.getName());
 
 		// material being produced
 		OeeEvent setup = PersistenceService.instance().fetchLastEvent(getSelectedEquipment(), OeeEventType.MATL_CHANGE);
