@@ -26,13 +26,16 @@ public class OperationsUI extends UI {
 
 	@Override
 	protected void init(VaadinRequest vaadinRequest) {
-		// initialize the persistence and data collector services
-		AppServices.instance().initialize();
-
 		// main UI form
 		if (logger.isInfoEnabled()) {
 			logger.info("Launching UI by request from " + vaadinRequest.getRemoteHost() + ":"
 					+ vaadinRequest.getRemotePort());
+		}
+
+		// initialize the persistence and data collector services
+		if (!AppServices.instance().initialize()) {
+			logger.error("Failed to initialize application services");
+			return;
 		}
 
 		// the view

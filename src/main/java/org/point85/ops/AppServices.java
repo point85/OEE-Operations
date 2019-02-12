@@ -4,6 +4,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
 import org.apache.log4j.PropertyConfigurator;
+import org.point85.domain.DomainUtils;
 import org.point85.domain.collector.CollectorService;
 import org.point85.domain.collector.OeeEvent;
 import org.point85.domain.persistence.PersistenceService;
@@ -13,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 public final class AppServices {
 	// logger
-	private static final Logger logger = LoggerFactory.getLogger(OperationsUI.class);
+	private static final Logger logger = LoggerFactory.getLogger(AppServices.class);
 
 	// event data collector
 	private final CollectorService collectorService;
@@ -32,9 +33,9 @@ public final class AppServices {
 		return services;
 	}
 
-	synchronized void initialize() {
+	synchronized boolean initialize() {
 		if (isInitialized) {
-			return;
+			return isInitialized;
 		}
 
 		// see web.xml for JDBC connection properties
@@ -42,6 +43,10 @@ public final class AppServices {
 		String jdbcConn = config.getInitParameter("jdbcConn");
 		String userName = config.getInitParameter("userName");
 		String password = config.getInitParameter("password");
+
+		if (password.trim().length() == 0) {
+			password = null;
+		}
 
 		// configure log4j
 		ServletContext context = OEEOperationsServlet.getCurrent().getServletContext();
@@ -65,15 +70,17 @@ public final class AppServices {
 			// start the data collector
 			startupCollector();
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error(DomainUtils.formatException(e));
 			try {
 				shutdownCollector();
 			} catch (Exception any) {
-				logger.error(any.getMessage());
+				logger.error(DomainUtils.formatException(any));
 			}
+		} finally {
+			isInitialized = true;
 		}
 
-		isInitialized = true;
+		return isInitialized;
 	}
 
 	private void startupCollector() throws Exception {

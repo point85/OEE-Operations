@@ -7,7 +7,7 @@
 	<servlet-class>org.point85.ops.OperationsUI$OEEOperationsServlet</servlet-class>
     <init-param>
       <param-name>jdbcConn</param-name>
-      <param-value>jdbc:sqlserver://localhost:1433;databaseName=OEE</param-value>
+      <param-value>jdbc:sqlserver://localhost:1433;databaseName=OEE2</param-value>
     </init-param>
     <init-param>
       <param-name>userName</param-name>

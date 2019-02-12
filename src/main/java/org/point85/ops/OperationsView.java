@@ -61,6 +61,9 @@ public class OperationsView extends VerticalLayout {
 	private static final String PROD_GOOD = "Good";
 	private static final String PROD_REJECT = "Reject and Rework";
 	private static final String PROD_STARTUP = "Startup and Yield";
+	
+	// manual source id
+	private static final String OPS_SOURCE_ID = "OPERATIONS";
 
 	// availability
 	private RadioButtonGroup<String> groupAvailabilitySummary;
@@ -746,6 +749,7 @@ public class OperationsView extends VerticalLayout {
 		event.setEventType(type);
 		event.setStartTime(DomainUtils.fromLocalDateTime(startTime));
 		event.setEndTime(DomainUtils.fromLocalDateTime(endTime));
+		event.setSourceId(OPS_SOURCE_ID);
 
 		// get the shift from the work schedule
 		WorkSchedule schedule = equipment.findWorkSchedule();

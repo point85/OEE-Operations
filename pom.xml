@@ -6,7 +6,7 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>1.5.0</version>
+	<version>2.0.0</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>
@@ -14,7 +14,7 @@
 	</prerequisites>
 
 	<properties>
-		<domain.version>1.5.0</domain.version>
+		<domain.version>2.0.0</domain.version>
 		<vaadin.version>8.6.3</vaadin.version>
 		<vaadin.plugin.version>8.6.3</vaadin.plugin.version>
 		<jetty.plugin.version>9.4.14.v20181114</jetty.plugin.version>
@@ -193,12 +193,51 @@
     <version>5.5.1</version>
 </dependency>
 
-<!-- DATABASE -->
+<!-- ACTIVEMQ -->
+<!-- https://mvnrepository.com/artifact/org.apache.activemq/activemq-client -->
+<dependency>
+    <groupId>org.apache.activemq</groupId>
+    <artifactId>activemq-client</artifactId>
+    <version>5.15.8</version>
+</dependency>
+
+<!-- MQTT -->
+<!-- https://mvnrepository.com/artifact/org.eclipse.paho/org.eclipse.paho.client.mqttv3 -->
+<dependency>
+    <groupId>org.eclipse.paho</groupId>
+    <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+    <version>1.2.0</version>
+</dependency>
+
+<!-- SQL Server DATABASE -->
 <!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/mssql-jdbc -->
 <dependency>
     <groupId>com.microsoft.sqlserver</groupId>
     <artifactId>mssql-jdbc</artifactId>
     <version>7.0.0.jre8</version>
+</dependency>
+
+<!-- Oracle DATABASE -->
+<dependency>
+    <groupId>com.oracle.jdbc</groupId>
+    <artifactId>ojdbc8</artifactId>
+    <version>8.0</version>
+</dependency>
+
+<!-- MySQL DATABASE -->
+<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.14</version>
+</dependency>
+
+<!-- PostgresQL DATABASE -->
+<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.2.5</version>
 </dependency>
 
 </dependencies>
