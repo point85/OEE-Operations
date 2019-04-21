@@ -48,20 +48,6 @@ import com.vaadin.ui.themes.ValoTheme;
 public class OperationsView extends VerticalLayout {
 	private static final long serialVersionUID = 6073934288316949481L;
 
-	private static final String HOURS = "Hours";
-	private static final String MINUTES = "Minutes";
-
-	private static final String BY_EVENT = "By Event";
-	private static final String SUMMARIZED = "Summarized";
-	private static final String EVENT_TIME = "Event Time";
-	private static final String FROM_TIME = "From Time";
-	private static final String TO_TIME = "To Time";
-
-	// good or reject production
-	private static final String PROD_GOOD = "Good";
-	private static final String PROD_REJECT = "Reject and Rework";
-	private static final String PROD_STARTUP = "Startup and Yield";
-	
 	// manual source id
 	private static final String OPS_SOURCE_ID = "OPERATIONS";
 
@@ -134,10 +120,10 @@ public class OperationsView extends VerticalLayout {
 		operationsPresenter.populateMaterialGrid(treeGridMaterial);
 
 		// summary availability
-		groupAvailabilitySummary.setSelectedItem(SUMMARIZED);
+		groupAvailabilitySummary.setSelectedItem(WebOperatorLocalizer.instance().getLangString("summarized"));
 
 		// summary production
-		groupProductionSummary.setSelectedItem(SUMMARIZED);
+		groupProductionSummary.setSelectedItem(WebOperatorLocalizer.instance().getLangString("summarized"));
 	}
 
 	private Component createMainPanel() {
@@ -163,14 +149,14 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private Component createMaterialJobLayout() {
-		lbMaterialId = new Label("Identifier");
-		lbMaterialDescription = new Label("Description");
-		lbJob = new Label("Job Name");
+		lbMaterialId = new Label(WebOperatorLocalizer.instance().getLangString("identifier"));
+		lbMaterialDescription = new Label(WebOperatorLocalizer.instance().getLangString("description"));
+		lbJob = new Label(WebOperatorLocalizer.instance().getLangString("job.name"));
 
-		Label material = new Label("MATERIAL");
+		Label material = new Label(WebOperatorLocalizer.instance().getLangString("material.cap"));
 		material.addStyleName(ValoTheme.LABEL_BOLD);
 
-		Label job = new Label("JOB");
+		Label job = new Label(WebOperatorLocalizer.instance().getLangString("job.cap"));
 		job.addStyleName(ValoTheme.LABEL_BOLD);
 
 		HorizontalLayout materialLayout = new HorizontalLayout();
@@ -194,15 +180,15 @@ public class OperationsView extends VerticalLayout {
 		});
 
 		Tab eventTab = tabSheet.addTab(createAvailabilityPanel());
-		eventTab.setCaption("Availability/Rate");
+		eventTab.setCaption(WebOperatorLocalizer.instance().getLangString("availability.rate"));
 		eventTab.setIcon(VaadinIcons.AUTOMATION);
 
 		Tab productionTab = tabSheet.addTab(createProductionLayout());
-		productionTab.setCaption("Production");
+		productionTab.setCaption(WebOperatorLocalizer.instance().getLangString("production"));
 		productionTab.setIcon(VaadinIcons.STOCK);
 
 		Tab jobTab = tabSheet.addTab(createJobMaterialPanel());
-		jobTab.setCaption("Job/Material");
+		jobTab.setCaption(WebOperatorLocalizer.instance().getLangString("job.material"));
 		jobTab.setIcon(VaadinIcons.PACKAGE);
 		return tabSheet;
 	}
@@ -238,8 +224,9 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private Component createProductionLayout() {
-		groupProductionSummary = new RadioButtonGroup<>("Production");
-		groupProductionSummary.setItems(BY_EVENT, SUMMARIZED);
+		groupProductionSummary = new RadioButtonGroup<>(WebOperatorLocalizer.instance().getLangString("production"));
+		groupProductionSummary.setItems(WebOperatorLocalizer.instance().getLangString("by.event"),
+				WebOperatorLocalizer.instance().getLangString("summarized"));
 		groupProductionSummary.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
 		groupProductionSummary.setRequiredIndicatorVisible(true);
 
@@ -253,8 +240,10 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
-		groupProductionType = new RadioButtonGroup<>("Production Type");
-		groupProductionType.setItems(PROD_GOOD, PROD_REJECT, PROD_STARTUP);
+		groupProductionType = new RadioButtonGroup<>(WebOperatorLocalizer.instance().getLangString("production.type"));
+		groupProductionType.setItems(WebOperatorLocalizer.instance().getLangString("good"),
+				WebOperatorLocalizer.instance().getLangString("reject.rework"),
+				WebOperatorLocalizer.instance().getLangString("startup.yield"));
 		groupProductionType.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
 		groupProductionType.setRequiredIndicatorVisible(true);
 
@@ -268,29 +257,29 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
-		tfAmount = new TextField("Quantity");
+		tfAmount = new TextField(WebOperatorLocalizer.instance().getLangString("quantity"));
 		tfAmount.setIcon(VaadinIcons.CUBES);
 		tfAmount.setRequiredIndicatorVisible(true);
 		tfAmount.setEnabled(false);
 
-		lbUOM = new Label("Unit");
+		lbUOM = new Label(WebOperatorLocalizer.instance().getLangString("unit"));
 		lbUOM.addStyleName(ValoTheme.LABEL_BOLD);
 
-		dtfProductionTime1 = new DateTimeField(EVENT_TIME);
+		dtfProductionTime1 = new DateTimeField(WebOperatorLocalizer.instance().getLangString("event.time"));
 		dtfProductionTime1.setValue(LocalDateTime.now());
 		dtfProductionTime1.setIcon(VaadinIcons.TIME_FORWARD);
 		dtfProductionTime1.setRequiredIndicatorVisible(true);
 
-		dtfProductionTime2 = new DateTimeField(TO_TIME);
+		dtfProductionTime2 = new DateTimeField(WebOperatorLocalizer.instance().getLangString("to.time"));
 		dtfProductionTime2.setValue(LocalDateTime.now());
 		dtfProductionTime2.setIcon(VaadinIcons.TIME_FORWARD);
 		dtfProductionTime2.setRequiredIndicatorVisible(true);
 
-		btnRecordProduction = new Button("Record");
+		btnRecordProduction = new Button(WebOperatorLocalizer.instance().getLangString("record"));
 		btnRecordProduction.setIcon(VaadinIcons.NOTEBOOK);
 		btnRecordProduction.setEnabled(false);
 		btnRecordProduction.setStyleName(ValoTheme.BUTTON_PRIMARY);
-		btnRecordProduction.setDescription("Record production event");
+		btnRecordProduction.setDescription(WebOperatorLocalizer.instance().getLangString("production.event"));
 		btnRecordProduction.addClickListener(event -> {
 			try {
 				recordProductionEvent();
@@ -299,8 +288,8 @@ public class OperationsView extends VerticalLayout {
 				showException(e);
 			}
 		});
-		
-		tfQualityReason = new TextField("Reason");
+
+		tfQualityReason = new TextField(WebOperatorLocalizer.instance().getLangString("reason"));
 		tfQualityReason.setIcon(VaadinIcons.PENCIL);
 		tfQualityReason.setRequiredIndicatorVisible(false);
 
@@ -314,7 +303,6 @@ public class OperationsView extends VerticalLayout {
 
 		VerticalLayout productionLayout = new VerticalLayout();
 		productionLayout.setMargin(true);
-
 		productionLayout.addComponents(groupProductionSummary, quantityLayout, timeLayout, btnRecordProduction);
 
 		return productionLayout;
@@ -328,7 +316,7 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private Component createHeader() {
-		Label header = new Label("Point 85 Operations");
+		Label header = new Label(WebOperatorLocalizer.instance().getLangString("operations"));
 		header.addStyleName(ValoTheme.LABEL_COLORED);
 		header.addStyleName(ValoTheme.LABEL_NO_MARGIN);
 		header.addStyleName(ValoTheme.LABEL_BOLD);
@@ -338,7 +326,7 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private Component createFooter() {
-		Label footer = new Label("Point85 OEE");
+		Label footer = new Label(WebOperatorLocalizer.instance().getLangString("oee"));
 		footer.addStyleName(ValoTheme.LABEL_COLORED);
 		footer.addStyleName(ValoTheme.LABEL_NO_MARGIN);
 		footer.addStyleName(ValoTheme.LABEL_BOLD);
@@ -349,7 +337,7 @@ public class OperationsView extends VerticalLayout {
 	private Tree<EntityNode> createEntityTree() {
 		treeEntity = new Tree<>();
 		treeEntity.setSelectionMode(SelectionMode.SINGLE);
-		treeEntity.setCaption("Plant Entities");
+		treeEntity.setCaption(WebOperatorLocalizer.instance().getLangString("plant.entities"));
 		treeEntity.setItemIconGenerator(new IconGenerator<EntityNode>() {
 			private static final long serialVersionUID = 5138538319672111077L;
 
@@ -419,7 +407,7 @@ public class OperationsView extends VerticalLayout {
 		if (job != null) {
 			lbJob.setValue(job);
 		} else {
-			lbJob.setValue("");
+			lbJob.setValue(null);
 		}
 
 		if (material != null) {
@@ -427,9 +415,9 @@ public class OperationsView extends VerticalLayout {
 			lbMaterialId.setData(material);
 			lbMaterialDescription.setValue(material.getDescription());
 		} else {
-			lbMaterialId.setValue("");
+			lbMaterialId.setValue(null);
 			lbMaterialId.setData(null);
-			lbMaterialDescription.setValue("");
+			lbMaterialDescription.setValue(null);
 		}
 	}
 
@@ -467,18 +455,19 @@ public class OperationsView extends VerticalLayout {
 		btnRecordAvailability.setEnabled(enabled);
 		btnRecordProduction.setEnabled(enabled);
 		btnRecordSetup.setEnabled(enabled);
-
 	}
 
 	private Component createReasonTreeLayout() {
 		// tree view of reasons
 		treeGridReason = new TreeGrid<>();
-		treeGridReason.setCaption("Reasons");
+		treeGridReason.setCaption(WebOperatorLocalizer.instance().getLangString("reasons"));
 		treeGridReason.setHeightByRows(6);
 
-		treeGridReason.addColumn(Reason::getName).setCaption("Name");
-		treeGridReason.addColumn(Reason::getDescription).setCaption("Description");
-		treeGridReason.addColumn(Reason::getLossCategory).setCaption("Loss Category");
+		treeGridReason.addColumn(Reason::getName).setCaption(WebOperatorLocalizer.instance().getLangString("name"));
+		treeGridReason.addColumn(Reason::getDescription)
+				.setCaption(WebOperatorLocalizer.instance().getLangString("description"));
+		treeGridReason.addColumn(Reason::getLossCategory)
+				.setCaption(WebOperatorLocalizer.instance().getLangString("loss.category"));
 
 		treeGridReason.addItemClickListener(event -> {
 			Reason reason = event.getItem();
@@ -502,7 +491,6 @@ public class OperationsView extends VerticalLayout {
 		HorizontalLayout layout = new HorizontalLayout();
 		layout.addComponent(btnRefreshReasons);
 		layout.addComponentsAndExpand(treeGridReason);
-
 		layout.setMargin(true);
 
 		return layout;
@@ -511,11 +499,13 @@ public class OperationsView extends VerticalLayout {
 	private Component createMaterialTreeLayout() {
 		// materials by category
 		treeGridMaterial = new TreeGrid<>();
-		treeGridMaterial.setCaption("Material");
+		treeGridMaterial.setCaption(WebOperatorLocalizer.instance().getLangString("material"));
 		treeGridMaterial.setHeightByRows(6);
 
-		treeGridMaterial.addColumn(MaterialCategory::getName).setCaption("Name");
-		treeGridMaterial.addColumn(MaterialCategory::getDescription).setCaption("Description");
+		treeGridMaterial.addColumn(MaterialCategory::getName)
+				.setCaption(WebOperatorLocalizer.instance().getLangString("name"));
+		treeGridMaterial.addColumn(MaterialCategory::getDescription)
+				.setCaption(WebOperatorLocalizer.instance().getLangString("description"));
 
 		treeGridMaterial.addItemClickListener(event -> {
 			MaterialCategory materialCategory = event.getItem();
@@ -549,8 +539,10 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private Component createAvailabilityLayout() {
-		groupAvailabilitySummary = new RadioButtonGroup<>("Availability");
-		groupAvailabilitySummary.setItems(BY_EVENT, SUMMARIZED);
+		groupAvailabilitySummary = new RadioButtonGroup<>(
+				WebOperatorLocalizer.instance().getLangString("availability"));
+		groupAvailabilitySummary.setItems(WebOperatorLocalizer.instance().getLangString("by.event"),
+				WebOperatorLocalizer.instance().getLangString("summarized"));
 		groupAvailabilitySummary.addStyleName(ValoTheme.OPTIONGROUP_HORIZONTAL);
 		groupAvailabilitySummary.setRequiredIndicatorVisible(true);
 
@@ -564,29 +556,29 @@ public class OperationsView extends VerticalLayout {
 			}
 		});
 
-		tfAvailabilityReason = new TextField("Reason");
+		tfAvailabilityReason = new TextField(WebOperatorLocalizer.instance().getLangString("reason"));
 		tfAvailabilityReason.setIcon(VaadinIcons.PENCIL);
 		tfAvailabilityReason.setRequiredIndicatorVisible(true);
 
-		dtfAvailabilityStart = new DateTimeField(EVENT_TIME);
+		dtfAvailabilityStart = new DateTimeField(WebOperatorLocalizer.instance().getLangString("event.time"));
 		dtfAvailabilityStart.setValue(LocalDateTime.now());
 		dtfAvailabilityStart.setIcon(VaadinIcons.TIME_FORWARD);
 		dtfAvailabilityStart.setRequiredIndicatorVisible(true);
 
-		dtfAvailabilityEnd = new DateTimeField(TO_TIME);
+		dtfAvailabilityEnd = new DateTimeField(WebOperatorLocalizer.instance().getLangString("to.time"));
 		dtfAvailabilityEnd.setValue(null);
 		dtfAvailabilityEnd.setIcon(VaadinIcons.TIME_FORWARD);
 		dtfAvailabilityEnd.setRequiredIndicatorVisible(true);
 
-		tfAvailabilityHours = new TextField(HOURS);
+		tfAvailabilityHours = new TextField(WebOperatorLocalizer.instance().getLangString("hours"));
 		tfAvailabilityHours.setIcon(VaadinIcons.CLOCK);
 		tfAvailabilityHours.setRequiredIndicatorVisible(true);
 
-		tfAvailabilityMinutes = new TextField(MINUTES);
+		tfAvailabilityMinutes = new TextField(WebOperatorLocalizer.instance().getLangString("minutes"));
 		tfAvailabilityMinutes.setIcon(VaadinIcons.CLOCK);
 		tfAvailabilityMinutes.setRequiredIndicatorVisible(true);
 
-		btnRecordAvailability = new Button("Record");
+		btnRecordAvailability = new Button(WebOperatorLocalizer.instance().getLangString("record"));
 		btnRecordAvailability.setIcon(VaadinIcons.NOTEBOOK);
 		btnRecordAvailability.setEnabled(false);
 		btnRecordAvailability.setStyleName(ValoTheme.BUTTON_PRIMARY);
@@ -605,30 +597,31 @@ public class OperationsView extends VerticalLayout {
 
 		VerticalLayout availabilityLayout = new VerticalLayout();
 		availabilityLayout.setMargin(true);
-		availabilityLayout.addComponents(groupAvailabilitySummary, tfAvailabilityReason, timeLayout, btnRecordAvailability);
+		availabilityLayout.addComponents(groupAvailabilitySummary, tfAvailabilityReason, timeLayout,
+				btnRecordAvailability);
 
 		return availabilityLayout;
 	}
 
 	private Component createSetupLayout() {
 
-		tfMaterial = new TextField("Material");
+		tfMaterial = new TextField(WebOperatorLocalizer.instance().getLangString("material"));
 		tfMaterial.setIcon(VaadinIcons.STOCK);
 		tfMaterial.setRequiredIndicatorVisible(true);
 
-		tfJob = new TextField("Job");
+		tfJob = new TextField(WebOperatorLocalizer.instance().getLangString("job"));
 		tfJob.setIcon(VaadinIcons.TAG);
 
-		dtfSetupTime = new DateTimeField("Changeover Time");
+		dtfSetupTime = new DateTimeField(WebOperatorLocalizer.instance().getLangString("changeover.time"));
 		dtfSetupTime.setValue(LocalDateTime.now());
 		dtfSetupTime.setIcon(VaadinIcons.TIME_FORWARD);
 		dtfSetupTime.setRequiredIndicatorVisible(true);
 
-		btnRecordSetup = new Button("Record");
+		btnRecordSetup = new Button(WebOperatorLocalizer.instance().getLangString("record"));
 		btnRecordSetup.setIcon(VaadinIcons.NOTEBOOK);
 		btnRecordSetup.setEnabled(false);
 		btnRecordSetup.setStyleName(ValoTheme.BUTTON_PRIMARY);
-		btnRecordSetup.setDescription("Button description");
+		btnRecordSetup.setDescription(WebOperatorLocalizer.instance().getLangString("setup.event"));
 		btnRecordSetup.addClickListener(event -> {
 			try {
 				recordSetupEvent();
@@ -673,11 +666,11 @@ public class OperationsView extends VerticalLayout {
 		if (groupProductionType.getSelectedItem().isPresent()) {
 			String type = groupProductionType.getSelectedItem().get();
 
-			if (type.equals(PROD_GOOD)) {
+			if (type.equals(WebOperatorLocalizer.instance().getLangString("good"))) {
 				resolverType = OeeEventType.PROD_GOOD;
-			} else if (type.equals(PROD_REJECT)) {
+			} else if (type.equals(WebOperatorLocalizer.instance().getLangString("reject.rework"))) {
 				resolverType = OeeEventType.PROD_REJECT;
-			} else if (type.equals(PROD_STARTUP)) {
+			} else if (type.equals(WebOperatorLocalizer.instance().getLangString("startup.yield"))) {
 				resolverType = OeeEventType.PROD_STARTUP;
 			}
 		}
@@ -691,7 +684,7 @@ public class OperationsView extends VerticalLayout {
 		if (tfAmount.getValue() != null && tfAmount.getValue().trim().length() > 0) {
 			amount = Double.valueOf(tfAmount.getValue());
 		} else {
-			throw new Exception("An amount must be specified.");
+			throw new Exception(WebOperatorLocalizer.instance().getErrorString("no.amount"));
 		}
 
 		UnitOfMeasure uom = (UnitOfMeasure) lbUOM.getData();
@@ -702,24 +695,24 @@ public class OperationsView extends VerticalLayout {
 		String selectedItem = groupProductionSummary.getSelectedItem().get();
 
 		Duration duration = null;
-		if (selectedItem.equals(BY_EVENT)) {
+		if (selectedItem.equals(WebOperatorLocalizer.instance().getLangString("by.event"))) {
 			endTime = null;
 		} else {
 			duration = Duration.between(startTime, endTime);
 		}
-		
+
 		// reason
 		String reasonName = tfQualityReason.getValue();
 		Reason reason = null;
-		
+
 		if (reasonName != null && reasonName.length() > 0) {
 			reason = PersistenceService.instance().fetchReasonByName(reasonName);
-			
+
 			if (reason == null) {
-				throw new Exception("The reason '" + reasonName + "' was not found in the database.");
+				throw new Exception(WebOperatorLocalizer.instance().getErrorString("no.reason", reasonName));
 			}
 		}
-		
+
 		// the production event
 		OeeEvent event = createEvent(getProductionType(), getSelectedEquipment(), startTime, endTime);
 
@@ -742,7 +735,7 @@ public class OperationsView extends VerticalLayout {
 	private OeeEvent createEvent(OeeEventType type, Equipment equipment, LocalDateTime startTime, LocalDateTime endTime)
 			throws Exception {
 		if (type == null) {
-			throw new Exception("The event type must be specified.");
+			throw new Exception(WebOperatorLocalizer.instance().getErrorString("no.event.type"));
 		}
 
 		OeeEvent event = new OeeEvent(equipment);
@@ -773,7 +766,7 @@ public class OperationsView extends VerticalLayout {
 		Material material = (Material) tfMaterial.getData();
 
 		if (material == null) {
-			throw new Exception("Material must be specified.");
+			throw new Exception(WebOperatorLocalizer.instance().getErrorString("no.material"));
 		}
 
 		OeeEvent event = createEvent(OeeEventType.MATL_CHANGE, getSelectedEquipment(), dtfSetupTime.getValue(), null);
@@ -791,7 +784,7 @@ public class OperationsView extends VerticalLayout {
 		Reason reason = (Reason) tfAvailabilityReason.getData();
 
 		if (reason == null) {
-			throw new Exception("A reason must be selected.");
+			throw new Exception(WebOperatorLocalizer.instance().getErrorString("select.reason"));
 		}
 
 		// duration
@@ -801,7 +794,7 @@ public class OperationsView extends VerticalLayout {
 		Duration duration = null;
 
 		String selectedItem = groupAvailabilitySummary.getSelectedItem().get();
-		if (selectedItem.equals(SUMMARIZED)) {
+		if (selectedItem.equals(WebOperatorLocalizer.instance().getLangString("summarized"))) {
 			// specified duration
 			int seconds = 0;
 
@@ -836,13 +829,13 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private void onSelectAvailabilityData(String type) {
-		if (type.equals(BY_EVENT)) {
-			dtfAvailabilityStart.setCaption(EVENT_TIME);
+		if (type.equals(WebOperatorLocalizer.instance().getLangString("by.event"))) {
+			dtfAvailabilityStart.setCaption(WebOperatorLocalizer.instance().getLangString("event.time"));
 			dtfAvailabilityEnd.setVisible(false);
 			tfAvailabilityHours.setVisible(false);
 			tfAvailabilityMinutes.setVisible(false);
-		} else if (type.equals(SUMMARIZED)) {
-			dtfAvailabilityStart.setCaption(FROM_TIME);
+		} else if (type.equals(WebOperatorLocalizer.instance().getLangString("summarized"))) {
+			dtfAvailabilityStart.setCaption(WebOperatorLocalizer.instance().getLangString("from.time"));
 			dtfAvailabilityEnd.setVisible(true);
 			tfAvailabilityHours.setVisible(true);
 			tfAvailabilityMinutes.setVisible(true);
@@ -850,11 +843,11 @@ public class OperationsView extends VerticalLayout {
 	}
 
 	private void onSelectProductionData(String type) {
-		if (type.equals(BY_EVENT)) {
-			dtfProductionTime1.setCaption(EVENT_TIME);
+		if (type.equals(WebOperatorLocalizer.instance().getLangString("by.event"))) {
+			dtfProductionTime1.setCaption(WebOperatorLocalizer.instance().getLangString("event.time"));
 			dtfProductionTime2.setVisible(false);
-		} else if (type.equals(SUMMARIZED)) {
-			dtfProductionTime1.setCaption(FROM_TIME);
+		} else if (type.equals(WebOperatorLocalizer.instance().getLangString("summarized"))) {
+			dtfProductionTime1.setCaption(WebOperatorLocalizer.instance().getLangString("from.time"));
 			dtfProductionTime2.setVisible(true);
 		}
 	}
@@ -866,29 +859,28 @@ public class OperationsView extends VerticalLayout {
 		Material material = (Material) lbMaterialId.getData();
 
 		if (material == null) {
-			throw new Exception("The material being processed must be defined.");
+			throw new Exception(WebOperatorLocalizer.instance().getErrorString("undefined.material"));
 		}
 
 		// update UOMs
 		EquipmentMaterial eqm = equipment.getEquipmentMaterial(material);
 
 		if (eqm == null) {
-			throw new Exception("The equipment settings for material " + material.getName() + " have not been defined");
+			throw new Exception(WebOperatorLocalizer.instance().getErrorString("undefined.settings", material.getName()));
 		}
 
 		OeeEventType resolverType = null;
-		if (type.equals(PROD_GOOD)) {
+		if (type.equals(WebOperatorLocalizer.instance().getLangString("good"))) {
 			resolverType = OeeEventType.PROD_GOOD;
-		} else if (type.equals(PROD_REJECT)) {
+		} else if (type.equals(WebOperatorLocalizer.instance().getLangString("reject.rework"))) {
 			resolverType = OeeEventType.PROD_REJECT;
-		} else if (type.equals(PROD_STARTUP)) {
+		} else if (type.equals(WebOperatorLocalizer.instance().getLangString("startup.yield"))) {
 			resolverType = OeeEventType.PROD_STARTUP;
 		}
 
 		UnitOfMeasure uom = equipment.getUOM(material, resolverType);
 		if (uom == null) {
-			throw new Exception("The unit of measure has not been defined for material " + material.getName()
-					+ " for this type of production.");
+			throw new Exception(WebOperatorLocalizer.instance().getErrorString("undefined.uom", material.getName()));
 		}
 		lbUOM.setValue(uom.getSymbol());
 		lbUOM.setData(uom);

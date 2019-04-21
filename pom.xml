@@ -6,7 +6,7 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>2.2.1</version>
+	<version>2.3.0</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>
@@ -14,9 +14,9 @@
 	</prerequisites>
 
 	<properties>
-		<domain.version>2.2.1</domain.version>
-		<vaadin.version>8.6.3</vaadin.version>
-		<vaadin.plugin.version>8.6.3</vaadin.plugin.version>
+		<domain.version>2.3.0</domain.version>
+		<vaadin.version>8.7.2</vaadin.version>
+		<vaadin.plugin.version>8.7.2</vaadin.plugin.version>
 		<jetty.plugin.version>9.4.14.v20181114</jetty.plugin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -198,7 +198,7 @@
 <dependency>
     <groupId>org.apache.activemq</groupId>
     <artifactId>activemq-client</artifactId>
-    <version>5.15.8</version>
+    <version>5.15.9</version>
 </dependency>
 
 <!-- MQTT -->

@@ -97,5 +97,4 @@ public final class AppServices {
 	synchronized void recordEvent(OeeEvent event) throws Exception {
 		collectorService.recordResolution(event);
 	}
-
 }

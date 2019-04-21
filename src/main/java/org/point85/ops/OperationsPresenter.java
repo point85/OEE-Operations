@@ -25,7 +25,6 @@ public class OperationsPresenter  {
 	}
 
 	void populateTopEntityNodes(Tree<EntityNode> entityTree) {
-
 		// fetch the entities
 		List<PlantEntity> entities = PersistenceService.instance().fetchTopPlantEntities();
 		Collections.sort(entities);

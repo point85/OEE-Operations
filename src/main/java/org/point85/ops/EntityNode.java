@@ -32,7 +32,6 @@ public class EntityNode {
 		if (entity != null) {
 			text = entity.getName() + " (" + entity.getDescription() + ")";
 		}
-
 		return text;
 	}
 }
