@@ -11,11 +11,11 @@
     </init-param>
     <init-param>
       <param-name>userName</param-name>
-      <param-value>SA</param-value>
+      <param-value>Point85</param-value>
     </init-param>
     <init-param>
       <param-name>password</param-name>
-      <param-value></param-value>
+      <param-value>Point85</param-value>
     </init-param>
   </servlet>
 </web-app>

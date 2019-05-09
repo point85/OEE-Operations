@@ -44,7 +44,7 @@ public final class AppServices {
 		String userName = config.getInitParameter("userName");
 		String password = config.getInitParameter("password");
 
-		if (password.trim().length() == 0) {
+		if (password != null && password.trim().length() == 0) {
 			password = null;
 		}
 
