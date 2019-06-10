@@ -17,5 +17,10 @@
       <param-name>password</param-name>
       <param-value>Point85</param-value>
     </init-param>
+    <init-param>
+      <param-name>collectorName</param-name>
+      <!-- ALL, NONE or a specific collector name -->
+      <param-value>ALL</param-value>
+    </init-param>
   </servlet>
 </web-app>

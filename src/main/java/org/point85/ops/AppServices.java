@@ -16,6 +16,10 @@ public final class AppServices {
 	// logger
 	private static final Logger logger = LoggerFactory.getLogger(AppServices.class);
 
+	// collection flags
+	private static final String ALL_COLLECTORS = "ALL";
+	private static final String NO_COLLECTORS = "NONE";
+
 	// event data collector
 	private final CollectorService collectorService;
 
@@ -48,6 +52,11 @@ public final class AppServices {
 			password = null;
 		}
 
+		// flag to run the collection service
+		String collectorName = config.getInitParameter("collectorName");
+		boolean collectData = collectorName != null && collectorName.trim().equalsIgnoreCase(NO_COLLECTORS) ? false
+				: true;
+
 		// configure log4j
 		ServletContext context = OEEOperationsServlet.getCurrent().getServletContext();
 		String realPath = context.getRealPath("");
@@ -62,24 +71,31 @@ public final class AppServices {
 		PersistenceService.instance().initialize(jdbcConn, userName, password);
 
 		// start the collector
-		if (logger.isInfoEnabled()) {
-			logger.info("Starting collector.");
-		}
-
-		try {
-			// start the data collector
-			startupCollector();
-		} catch (Exception e) {
-			logger.error(DomainUtils.formatException(e));
-			try {
-				shutdownCollector();
-			} catch (Exception any) {
-				logger.error(DomainUtils.formatException(any));
+		if (collectData) {
+			if (logger.isInfoEnabled()) {
+				logger.info("Starting collector for " + collectorName);
 			}
-		} finally {
+
+			try {
+				// start the data collection
+				if (!collectorName.equalsIgnoreCase(ALL_COLLECTORS)) {
+					collectorService.setCollectorName(collectorName);
+				}
+
+				startupCollector();
+			} catch (Exception e) {
+				logger.error(DomainUtils.formatException(e));
+				try {
+					shutdownCollector();
+				} catch (Exception any) {
+					logger.error(DomainUtils.formatException(any));
+				}
+			} finally {
+				isInitialized = true;
+			}
+		} else {
 			isInitialized = true;
 		}
-
 		return isInitialized;
 	}
 
