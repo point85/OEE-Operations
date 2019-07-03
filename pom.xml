@@ -6,7 +6,7 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>2.4.0</version>
+	<version>2.4.1</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>
@@ -14,9 +14,9 @@
 	</prerequisites>
 
 	<properties>
-		<domain.version>2.4.0</domain.version>
-		<vaadin.version>8.7.2</vaadin.version>
-		<vaadin.plugin.version>8.7.2</vaadin.plugin.version>
+		<domain.version>2.4.1</domain.version>
+		<vaadin.version>8.8.3</vaadin.version>
+		<vaadin.plugin.version>8.8.3</vaadin.plugin.version>
 		<jetty.plugin.version>9.4.14.v20181114</jetty.plugin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -142,7 +142,7 @@
 <dependency>
     <groupId>org.eclipse.milo</groupId>
     <artifactId>sdk-client</artifactId>
-    <version>0.2.5</version>
+    <version>0.3.2</version>
     <scope>runtime</scope>
 </dependency>
 
