@@ -6,7 +6,7 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>2.5.0</version>
+	<version>2.5.1</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>
@@ -14,7 +14,7 @@
 	</prerequisites>
 
 	<properties>
-		<domain.version>2.5.0</domain.version>
+		<domain.version>2.5.1</domain.version>
 		<vaadin.version>8.8.5</vaadin.version>
 		<vaadin.plugin.version>8.8.5</vaadin.plugin.version>
 		<jetty.plugin.version>9.4.14.v20181114</jetty.plugin.version>
@@ -150,7 +150,7 @@
 <dependency>
     <groupId>org.bouncycastle</groupId>
     <artifactId>bcprov-jdk15on</artifactId>
-    <version>1.50</version>
+    <version>1.61</version>
     <scope>runtime</scope>
 </dependency>
 
