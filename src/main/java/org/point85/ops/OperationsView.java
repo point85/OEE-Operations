@@ -2,6 +2,7 @@ package org.point85.ops;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -813,17 +814,14 @@ public class OperationsView extends VerticalLayout {
 		}
 
 		// create availability event
-		OeeEvent event = createEvent(OeeEventType.AVAILABILITY, getSelectedEquipment(), startTime, endTime);
+		OffsetDateTime start = DomainUtils.fromLocalDateTime(startTime);
+		OffsetDateTime end = DomainUtils.fromLocalDateTime(endTime);
+
+		OeeEvent event = AppServices.instance().getCollectorService().createEvent(OPS_SOURCE_ID,
+				OeeEventType.AVAILABILITY, getSelectedEquipment(), start, end);
 		event.setReason(reason);
 		event.setDuration(duration);
 		event.setInputValue(reason.getName());
-
-		// material being produced
-		OeeEvent setup = PersistenceService.instance().fetchLastEvent(getSelectedEquipment(), OeeEventType.MATL_CHANGE);
-
-		if (setup != null) {
-			event.setMaterial(setup.getMaterial());
-		}
 
 		AppServices.instance().recordEvent(event);
 	}
@@ -866,7 +864,8 @@ public class OperationsView extends VerticalLayout {
 		EquipmentMaterial eqm = equipment.getEquipmentMaterial(material);
 
 		if (eqm == null) {
-			throw new Exception(WebOperatorLocalizer.instance().getErrorString("undefined.settings", material.getName()));
+			throw new Exception(
+					WebOperatorLocalizer.instance().getErrorString("undefined.settings", material.getName()));
 		}
 
 		OeeEventType resolverType = null;

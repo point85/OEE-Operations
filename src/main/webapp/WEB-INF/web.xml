@@ -6,16 +6,19 @@
     <servlet-name>OEEOperationsServlet</servlet-name>
 	<servlet-class>org.point85.ops.OperationsUI$OEEOperationsServlet</servlet-class>
     <init-param>
+	<!-- JDBC database connection -->
       <param-name>jdbcConn</param-name>
       <param-value>jdbc:hsqldb:hsql://localhost/OEE</param-value>
     </init-param>
     <init-param>
+	<!-- database user name -->
       <param-name>userName</param-name>
-      <param-value>Point85</param-value>
+      <param-value>SA</param-value>
     </init-param>
     <init-param>
+	<!-- database user password -->
       <param-name>password</param-name>
-      <param-value>Point85</param-value>
+      <param-value></param-value>
     </init-param>
     <init-param>
       <param-name>collectorName</param-name>
