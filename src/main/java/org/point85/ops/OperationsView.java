@@ -84,7 +84,7 @@ public class OperationsView extends VerticalLayout {
 	private DateTimeField dtfSetupTime;
 
 	// the presenter
-	private final OperationsPresenter operationsPresenter;
+	private transient final OperationsPresenter operationsPresenter;
 
 	// the UI
 	private final OperationsUI ui;
@@ -111,14 +111,18 @@ public class OperationsView extends VerticalLayout {
 		// footer
 		addComponent(createFooter());
 
-		// query for the root plant entities
-		operationsPresenter.populateTopEntityNodes(treeEntity);
+		try {
+			// query for the root plant entities
+			operationsPresenter.populateTopEntityNodes(treeEntity);
 
-		// query for the reasons
-		operationsPresenter.populateReasonGrid(treeGridReason);
+			// query for the reasons
+			operationsPresenter.populateReasonGrid(treeGridReason);
 
-		// query for the materials
-		operationsPresenter.populateMaterialGrid(treeGridMaterial);
+			// query for the materials
+			operationsPresenter.populateMaterialGrid(treeGridMaterial);
+		} catch (Exception e) {
+			showException(e);
+		}
 
 		// summary availability
 		groupAvailabilitySummary.setSelectedItem(WebOperatorLocalizer.instance().getLangString("summarized"));
@@ -800,11 +804,11 @@ public class OperationsView extends VerticalLayout {
 			int seconds = 0;
 
 			if (tfAvailabilityHours.getValue() != null && tfAvailabilityHours.getValue().trim().length() > 0) {
-				seconds = Integer.valueOf(tfAvailabilityHours.getValue().trim()) * 3600;
+				seconds = Integer.valueOf(tfAvailabilityHours.getValue().trim()).intValue() * 3600;
 			}
 
 			if (tfAvailabilityMinutes.getValue() != null && tfAvailabilityMinutes.getValue().trim().length() > 0) {
-				seconds += Integer.valueOf(tfAvailabilityMinutes.getValue().trim()) * 60;
+				seconds += Integer.valueOf(tfAvailabilityMinutes.getValue().trim()).intValue() * 60;
 			}
 
 			duration = Duration.ofSeconds(seconds);

@@ -6,7 +6,7 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>2.6.0</version>
+	<version>3.0.0</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>
@@ -14,10 +14,11 @@
 	</prerequisites>
 
 	<properties>
-		<domain.version>2.6.0</domain.version>
-		<vaadin.version>8.8.5</vaadin.version>
-		<vaadin.plugin.version>8.8.5</vaadin.plugin.version>
-		<jetty.plugin.version>9.4.14.v20181114</jetty.plugin.version>
+		<domain.version>3.0.0</domain.version>
+		<vaadin.version>8.10.5</vaadin.version>
+		<vaadin.plugin.version>8.10.5</vaadin.plugin.version>
+		<jetty.plugin.version>9.4.30.v20200611</jetty.plugin.version>
+		<jetty.version>9.4.30.v20200611</jetty.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -74,15 +75,21 @@
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-themes</artifactId>
 		</dependency>
-		
-<!-- https://mvnrepository.com/artifact/org.nanohttpd/nanohttpd -->
-<dependency>
-    <groupId>org.nanohttpd</groupId>
-    <artifactId>nanohttpd</artifactId>
-    <version>2.3.1</version>
-    <scope>runtime</scope>
-</dependency>
 
+    <!--  Jetty HTTP server -->
+    <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>${jetty.version}</version>
+    </dependency>
+    
+    <!--  Jetty servlet -->
+    <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-servlet</artifactId>
+        <version>${jetty.version}</version>
+    </dependency>
+    
 <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
 <dependency>
     <groupId>com.google.code.gson</groupId>
@@ -252,7 +259,7 @@
 <dependency>
   <groupId>org.quartz-scheduler</groupId>
   <artifactId>quartz</artifactId>
-  <version>2.2.3</version>
+  <version>2.3.2</version>
     <exclusions>
       <exclusion>  
         <!-- c3p0-->

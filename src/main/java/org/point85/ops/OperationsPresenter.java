@@ -16,7 +16,7 @@ import com.vaadin.data.provider.TreeDataProvider;
 import com.vaadin.ui.Tree;
 import com.vaadin.ui.TreeGrid;
 
-public class OperationsPresenter  {
+public class OperationsPresenter {
 	// view
 	private final OperationsView operationsView;
 
@@ -24,7 +24,7 @@ public class OperationsPresenter  {
 		this.operationsView = view;
 	}
 
-	void populateTopEntityNodes(Tree<EntityNode> entityTree) {
+	void populateTopEntityNodes(Tree<EntityNode> entityTree) throws Exception {
 		// fetch the entities
 		List<PlantEntity> entities = PersistenceService.instance().fetchTopPlantEntities();
 		Collections.sort(entities);
@@ -45,14 +45,14 @@ public class OperationsPresenter  {
 		entityTree.setDataProvider(dataProvider);
 	}
 
-	void populateReasonGrid(TreeGrid<Reason> reasonTreeGrid) {
+	void populateReasonGrid(TreeGrid<Reason> reasonTreeGrid) throws Exception {
 		List<Reason> reasons = PersistenceService.instance().fetchTopReasons();
 
 		// Initialize a TreeGrid and set in-memory data
 		reasonTreeGrid.setItems(reasons, Reason::getChildren);
 	}
 
-	void populateMaterialGrid(TreeGrid<MaterialCategory> materialTreeGrid) {
+	void populateMaterialGrid(TreeGrid<MaterialCategory> materialTreeGrid) throws Exception {
 		List<String> categories = PersistenceService.instance().fetchMaterialCategories();
 
 		List<MaterialCategory> materialCategories = new ArrayList<>();
@@ -77,7 +77,7 @@ public class OperationsPresenter  {
 		operationsView.onException(e);
 	}
 
-	public OeeEvent getLastSetup(Equipment equipment) {
+	public OeeEvent getLastSetup(Equipment equipment) throws Exception {
 		return PersistenceService.instance().fetchLastEvent(equipment, OeeEventType.MATL_CHANGE);
 	}
 }
