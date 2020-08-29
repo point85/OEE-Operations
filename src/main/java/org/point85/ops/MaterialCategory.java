@@ -8,18 +8,18 @@ import org.point85.domain.plant.Material;
 
 public class MaterialCategory {
 	private Material material;
-	private String materialCategory;
+	private String category;
 
 	public MaterialCategory(Material material) {
 		this.material = material;
 	}
 
 	public MaterialCategory(String category) {
-		this.materialCategory = category;
+		this.category = category;
 	}
 
 	public String getName() {
-		return (material != null) ? material.getName() : materialCategory;
+		return (material != null) ? material.getName() : category;
 	}
 
 	public String getDescription() {
@@ -31,11 +31,11 @@ public class MaterialCategory {
 	}
 
 	public List<MaterialCategory> getMaterialsInCategory() throws Exception {
-		List<Material> materials = PersistenceService.instance().fetchMaterialsByCategory(materialCategory);
+		List<Material> materials = PersistenceService.instance().fetchMaterialsByCategory(category);
 
 		List<MaterialCategory> materialCategories = new ArrayList<>();
-		for (Material material : materials) {
-			materialCategories.add(new MaterialCategory(material));
+		for (Material aMaterial : materials) {
+			materialCategories.add(new MaterialCategory(aMaterial));
 		}
 		return materialCategories;
 	}

@@ -8,9 +8,10 @@ import org.point85.domain.DomainUtils;
 import org.point85.domain.collector.CollectorService;
 import org.point85.domain.collector.OeeEvent;
 import org.point85.domain.persistence.PersistenceService;
-import org.point85.ops.OperationsUI.OEEOperationsServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.server.VaadinServlet;
 
 public final class AppServices {
 	// logger
@@ -43,7 +44,7 @@ public final class AppServices {
 		}
 
 		// see web.xml for JDBC connection properties
-		ServletConfig config = OEEOperationsServlet.getCurrent().getServletConfig();
+		ServletConfig config = VaadinServlet.getCurrent().getServletConfig();
 		String jdbcConn = config.getInitParameter("jdbcConn");
 		String userName = config.getInitParameter("userName");
 		String password = config.getInitParameter("password");
@@ -54,11 +55,10 @@ public final class AppServices {
 
 		// flag to run the collection service
 		String collectorName = config.getInitParameter("collectorName");
-		boolean collectData = collectorName != null && collectorName.trim().equalsIgnoreCase(NO_COLLECTORS) ? false
-				: true;
+		boolean collectData = collectorName != null && collectorName.trim().equalsIgnoreCase(NO_COLLECTORS);
 
 		// configure log4j
-		ServletContext context = OEEOperationsServlet.getCurrent().getServletContext();
+		ServletContext context = VaadinServlet.getCurrent().getServletContext();
 		String realPath = context.getRealPath("");
 		String log4jProps = realPath + "/log4j.properties";
 		PropertyConfigurator.configure(log4jProps);
@@ -104,7 +104,7 @@ public final class AppServices {
 		collectorService.startup();
 	}
 
-	void shutdownCollector() throws Exception {
+	void shutdownCollector() {
 		if (collectorService != null) {
 			collectorService.shutdown();
 		}
@@ -113,7 +113,7 @@ public final class AppServices {
 	synchronized void recordEvent(OeeEvent event) throws Exception {
 		collectorService.recordResolution(event);
 	}
-	
+
 	CollectorService getCollectorService() {
 		return collectorService;
 	}

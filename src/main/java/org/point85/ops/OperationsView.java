@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -84,7 +85,7 @@ public class OperationsView extends VerticalLayout {
 	private DateTimeField dtfSetupTime;
 
 	// the presenter
-	private transient final OperationsPresenter operationsPresenter;
+	private final transient OperationsPresenter operationsPresenter;
 
 	// the UI
 	private final OperationsUI ui;
@@ -176,13 +177,6 @@ public class OperationsView extends VerticalLayout {
 		TabSheet tabSheet = new TabSheet();
 		tabSheet.setSizeFull();
 		tabSheet.setStyleName(ValoTheme.TABSHEET_FRAMED);
-
-		tabSheet.addSelectedTabChangeListener(event -> {
-			try {
-			} catch (Exception e) {
-				showException(e);
-			}
-		});
 
 		Tab eventTab = tabSheet.addTab(createAvailabilityPanel());
 		eventTab.setCaption(WebOperatorLocalizer.instance().getLangString("availability.rate"));
@@ -646,7 +640,7 @@ public class OperationsView extends VerticalLayout {
 		return setupLayout;
 	}
 
-	Equipment getSelectedEquipment() throws Exception {
+	Equipment getSelectedEquipment() {
 		Equipment equipment = null;
 
 		Set<EntityNode> entityNodes = treeEntity.getSelectedItems();
@@ -668,8 +662,10 @@ public class OperationsView extends VerticalLayout {
 	private OeeEventType getProductionType() {
 		OeeEventType resolverType = null;
 
-		if (groupProductionType.getSelectedItem().isPresent()) {
-			String type = groupProductionType.getSelectedItem().get();
+		Optional<String> optionalItem = groupProductionType.getSelectedItem();
+
+		if (optionalItem.isPresent()) {
+			String type = optionalItem.get();
 
 			if (type.equals(WebOperatorLocalizer.instance().getLangString("good"))) {
 				resolverType = OeeEventType.PROD_GOOD;
@@ -697,7 +693,14 @@ public class OperationsView extends VerticalLayout {
 		LocalDateTime startTime = dtfProductionTime1.getValue();
 		LocalDateTime endTime = dtfProductionTime2.getValue();
 
-		String selectedItem = groupProductionSummary.getSelectedItem().get();
+		Optional<String> optionalItem = groupProductionSummary.getSelectedItem();
+		String selectedItem = null;
+
+		if (optionalItem.isPresent()) {
+			selectedItem = optionalItem.get();
+		} else {
+			return;
+		}
 
 		Duration duration = null;
 		if (selectedItem.equals(WebOperatorLocalizer.instance().getLangString("by.event"))) {
@@ -798,17 +801,25 @@ public class OperationsView extends VerticalLayout {
 
 		Duration duration = null;
 
-		String selectedItem = groupAvailabilitySummary.getSelectedItem().get();
+		Optional<String> optionalItem = groupAvailabilitySummary.getSelectedItem();
+		String selectedItem = null;
+
+		if (optionalItem.isPresent()) {
+			selectedItem = optionalItem.get();
+		} else {
+			return;
+		}
+
 		if (selectedItem.equals(WebOperatorLocalizer.instance().getLangString("summarized"))) {
 			// specified duration
 			int seconds = 0;
 
 			if (tfAvailabilityHours.getValue() != null && tfAvailabilityHours.getValue().trim().length() > 0) {
-				seconds = Integer.valueOf(tfAvailabilityHours.getValue().trim()).intValue() * 3600;
+				seconds = Integer.parseInt(tfAvailabilityHours.getValue().trim()) * 3600;
 			}
 
 			if (tfAvailabilityMinutes.getValue() != null && tfAvailabilityMinutes.getValue().trim().length() > 0) {
-				seconds += Integer.valueOf(tfAvailabilityMinutes.getValue().trim()).intValue() * 60;
+				seconds += Integer.parseInt(tfAvailabilityMinutes.getValue().trim()) * 60;
 			}
 
 			duration = Duration.ofSeconds(seconds);
@@ -894,13 +905,24 @@ public class OperationsView extends VerticalLayout {
 	// callback
 	void onException(Exception e) {
 		// put on UI thread
-		Runnable exceptionTask = () -> {
-			showException(e);
-		};
+		Runnable exceptionTask = () -> showException(e);
 		ui.access(exceptionTask);
 	}
 
 	private void showException(Exception e) {
 		Notification.show(e.getMessage(), Notification.Type.ERROR_MESSAGE);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof OperationsView) {
+			return super.equals(obj);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(OPS_SOURCE_ID, getDescription());
 	}
 }
