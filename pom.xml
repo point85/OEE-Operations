@@ -6,7 +6,7 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>3.1.2</version>
+	<version>3.2.0</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>
@@ -14,7 +14,7 @@
 	</prerequisites>
 
 	<properties>
-		<domain.version>3.1.2</domain.version>
+		<domain.version>3.2.0</domain.version>
 		<vaadin.version>8.11.2</vaadin.version>
 		<vaadin.plugin.version>8.11.2</vaadin.plugin.version>
 		<jetty.plugin.version>9.4.31.v20200723</jetty.plugin.version>
