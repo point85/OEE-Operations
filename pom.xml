@@ -18,7 +18,7 @@
 		<vaadin.version>8.11.2</vaadin.version>
 		<vaadin.plugin.version>8.11.2</vaadin.plugin.version>
 		<jetty.plugin.version>9.4.31.v20200723</jetty.plugin.version>
-		<jetty.version>9.4.31.v20200723</jetty.version>
+		<jetty.version>9.4.35.v20201120</jetty.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
