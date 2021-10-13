@@ -15,7 +15,7 @@
 
 	<properties>
 		<domain.version>3.5.0</domain.version>
-		<vaadin.version>8.13.3</vaadin.version>
+		<vaadin.version>8.14.1</vaadin.version>
 		<vaadin.plugin.version>8.13.3</vaadin.plugin.version>
 		<jetty.plugin.version>9.4.39.v20210325</jetty.plugin.version>
 		<jetty.version>9.4.43.v20210629</jetty.version>
