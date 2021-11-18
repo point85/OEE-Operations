@@ -39,62 +39,60 @@ public final class AppServices {
 	}
 
 	synchronized boolean initialize() {
-		if (isInitialized) {
-			return isInitialized;
-		}
+		if (!isInitialized) {
+			// see web.xml for JDBC connection properties
+			ServletConfig config = VaadinServlet.getCurrent().getServletConfig();
+			String jdbcConn = config.getInitParameter("jdbcConn");
+			String userName = config.getInitParameter("userName");
+			String password = config.getInitParameter("password");
 
-		// see web.xml for JDBC connection properties
-		ServletConfig config = VaadinServlet.getCurrent().getServletConfig();
-		String jdbcConn = config.getInitParameter("jdbcConn");
-		String userName = config.getInitParameter("userName");
-		String password = config.getInitParameter("password");
-
-		if (password != null && password.trim().length() == 0) {
-			password = null;
-		}
-
-		// flag to run the collection service
-		String collectorName = config.getInitParameter("collectorName");
-		boolean collectData = collectorName != null && collectorName.trim().equalsIgnoreCase(NO_COLLECTORS);
-
-		// configure log4j
-		ServletContext context = VaadinServlet.getCurrent().getServletContext();
-		String realPath = context.getRealPath("");
-		String log4jProps = realPath + "/log4j.properties";
-		PropertyConfigurator.configure(log4jProps);
-
-		if (logger.isInfoEnabled()) {
-			logger.info("Initializing persistence service for connection " + jdbcConn + " and user " + userName);
-		}
-
-		// create the EMF on background thread
-		PersistenceService.instance().initialize(jdbcConn, userName, password);
-
-		// start the collector
-		if (collectData) {
-			if (logger.isInfoEnabled()) {
-				logger.info("Starting collector for " + collectorName);
+			if (password != null && password.trim().length() == 0) {
+				password = null;
 			}
 
-			try {
-				// start the data collection
-				if (!collectorName.equalsIgnoreCase(ALL_COLLECTORS)) {
-					collectorService.setCollectorName(collectorName);
+			// flag to run the collection service
+			String collectorName = config.getInitParameter("collectorName");
+			boolean collectData = collectorName != null && collectorName.trim().equalsIgnoreCase(NO_COLLECTORS);
+
+			// configure log4j
+			ServletContext context = VaadinServlet.getCurrent().getServletContext();
+			String realPath = context.getRealPath("");
+			String log4jProps = realPath + "/log4j.properties";
+			PropertyConfigurator.configure(log4jProps);
+
+			if (logger.isInfoEnabled()) {
+				logger.info("Initializing persistence service for connection " + jdbcConn + " and user " + userName);
+			}
+
+			// create the EMF on background thread
+			PersistenceService.instance().initialize(jdbcConn, userName, password);
+
+			// start the collector
+			if (collectData) {
+				if (logger.isInfoEnabled()) {
+					logger.info("Starting collector for " + collectorName);
 				}
 
-				startupCollector();
-			} catch (Exception e) {
-				logger.error(DomainUtils.formatException(e));
 				try {
-					shutdownCollector();
-				} catch (Exception any) {
-					logger.error(DomainUtils.formatException(any));
+					// start the data collection
+					if (!collectorName.equalsIgnoreCase(ALL_COLLECTORS)) {
+						collectorService.setCollectorName(collectorName);
+					}
+
+					startupCollector();
+				} catch (Exception e) {
+					logger.error(DomainUtils.formatException(e));
+					try {
+						shutdownCollector();
+					} catch (Exception any) {
+						logger.error(DomainUtils.formatException(any));
+					}
+				} finally {
+					isInitialized = true;
 				}
-			} finally {
+			} else {
 				isInitialized = true;
 			}
-		} else {
-			isInitialized = true;
 		}
 		return isInitialized;
 	}

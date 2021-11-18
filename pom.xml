@@ -6,7 +6,7 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>3.5.0</version>
+	<version>3.5.1</version>
 	<name>OEE-Operations</name>
 
 	<prerequisites>
@@ -14,11 +14,11 @@
 	</prerequisites>
 
 	<properties>
-		<domain.version>3.5.0</domain.version>
-		<vaadin.version>8.13.3</vaadin.version>
-		<vaadin.plugin.version>8.13.3</vaadin.plugin.version>
-		<jetty.plugin.version>9.4.39.v20210325</jetty.plugin.version>
-		<jetty.version>9.4.43.v20210629</jetty.version>
+		<domain.version>3.5.1</domain.version>
+		<vaadin.version>8.14.2</vaadin.version>
+		<vaadin.plugin.version>8.14.2</vaadin.plugin.version>
+		<jetty.plugin.version>9.4.44.v20210927</jetty.plugin.version>
+		<jetty.version>9.4.44.v20210927</jetty.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
