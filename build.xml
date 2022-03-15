@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
-<project name="oee-operations" default="copy-war" basedir="."  xmlns:fx="javafx:com.sun.javafx.tools.ant">
+<project name="oee-operations" default="copy-war" basedir="." > 
+<!-- xmlns:fx="javafx:com.sun.javafx.tools.ant"> -->
 	<property name="dist.dir" value="dist"/>
 	
 	<target name="copy-war">
