@@ -26,4 +26,9 @@
       <param-value>ALL</param-value>
     </init-param>
   </servlet>
+  
+  <context-param>
+    <param-name>isLog4jContextSelectorNamed</param-name>
+    <param-value>false</param-value>
+  </context-param>
 </web-app>

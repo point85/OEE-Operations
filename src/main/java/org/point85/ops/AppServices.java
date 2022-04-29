@@ -1,9 +1,12 @@
 package org.point85.ops;
 
+import java.io.File;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.point85.domain.DomainUtils;
 import org.point85.domain.collector.CollectorService;
 import org.point85.domain.collector.OeeEvent;
@@ -54,11 +57,14 @@ public final class AppServices {
 			String collectorName = config.getInitParameter("collectorName");
 			boolean collectData = collectorName != null && collectorName.trim().equalsIgnoreCase(NO_COLLECTORS);
 
-			// configure log4j
+			// configure log4j2
 			ServletContext context = VaadinServlet.getCurrent().getServletContext();
 			String realPath = context.getRealPath("");
-			String log4jProps = realPath + "/log4j.properties";
-			PropertyConfigurator.configure(log4jProps);
+			String log4j2Props = realPath + "/log4j2.xml";
+
+			LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+			File file = new File(log4j2Props);
+			loggerContext.setConfigLocation(file.toURI());
 
 			if (logger.isInfoEnabled()) {
 				logger.info("Initializing persistence service for connection " + jdbcConn + " and user " + userName);
