@@ -1,4 +1,5 @@
 rem build operator web war
+call mvn -v
 call mvn clean
 call mvn package
 rem build distribution war file
