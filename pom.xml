@@ -6,21 +6,21 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>3.9.1</version>
+	<version>3.9.2</version>
 	<name>OEE-Operations</name>
 
 	<properties>
-		<domain.version>3.9.1</domain.version>
+		<domain.version>3.9.2</domain.version>
 		<vaadin.version>8.14.3</vaadin.version>
 		<vaadin.plugin.version>8.14.3</vaadin.plugin.version>
-		<jetty.plugin.version>9.4.49.v20220914</jetty.plugin.version>
-		<jetty.version>9.4.49.v20220914</jetty.version>
+		<jetty.plugin.version>9.4.53.v20231009</jetty.plugin.version>
+		<jetty.version>9.4.53.v20231009</jetty.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>11</maven.compiler.target>
 		<!-- If there are no local customizations, this can also be "fetch" or "cdn" -->
 		<vaadin.widgetset.mode>local</vaadin.widgetset.mode>
-		<log4j2.version>2.17.2</log4j2.version>
+		<log4j2.version>2.21.1</log4j2.version>
 	</properties>
 
 	<repositories>
@@ -95,70 +95,16 @@
     <version>2.9.1</version>
     <scope>runtime</scope>
 </dependency>
-
-<!--  OPC DA -->
-<!--  https://github.com/IOT-DSA/dslink-java-opc -->
-<!--  https://mvnrepository.com/artifact/org.openscada.jinterop/org.openscada.jinterop.deps -->
-<dependency>
-    <groupId>org.openscada.jinterop</groupId>
-    <artifactId>org.openscada.jinterop.deps</artifactId>
-    <version>1.5.0</version>
-    <scope>runtime</scope>
-    <exclusions>
-        <exclusion>  
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </exclusion>
-     </exclusions>     
-</dependency>
-
-<!-- https://mvnrepository.com/artifact/org.openscada.jinterop/org.openscada.jinterop.core -->
-<dependency>
-    <groupId>org.openscada.jinterop</groupId>
-    <artifactId>org.openscada.jinterop.core</artifactId>
-    <version>2.1.8</version>
-    <scope>runtime</scope>
-    <exclusions>
-        <exclusion>  
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </exclusion>
-     </exclusions>     
-</dependency>
-
-<!-- https://mvnrepository.com/artifact/org.openscada.utgard/org.openscada.opc.dcom -->
-<dependency>
-    <groupId>org.openscada.utgard</groupId>
-    <artifactId>org.openscada.opc.dcom</artifactId>
-    <version>1.5.0</version>
-    <scope>runtime</scope>
-</dependency>
-
-<!-- https://mvnrepository.com/artifact/org.openscada.utgard/org.openscada.opc.lib -->
-
-<dependency>
-    <groupId>org.openscada.utgard</groupId>
-    <artifactId>org.openscada.opc.lib</artifactId>
-    <version>1.5.0</version>
-    <scope>runtime</scope>
-</dependency>
  
 <!--  OPC UA -->
-<!-- https://mvnrepository.com/artifact/org.eclipse.milo/sdk-client -->
+<!-- https://mvnrepository.com/artifact/org.eclipse.milo/sdk-client 
 <dependency>
     <groupId>org.eclipse.milo</groupId>
     <artifactId>sdk-client</artifactId>
-    <version>0.6.8</version>
+    <version>0.6.11</version>
     <scope>runtime</scope>
 </dependency>
-
-<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
-<dependency>
-    <groupId>org.bouncycastle</groupId>
-    <artifactId>bcprov-jdk15on</artifactId>
-    <version>1.69</version>
-    <scope>runtime</scope>
-</dependency>
+-->
 
 <!-- HIBERNATE JPA -->
 <!-- HikariCP -->
@@ -203,7 +149,7 @@
 <dependency>
     <groupId>com.rabbitmq</groupId>
     <artifactId>amqp-client</artifactId>
-    <version>5.16.0</version>
+    <version>5.19.0</version>
 </dependency>
 
 <!-- ACTIVEMQ -->
@@ -211,7 +157,7 @@
 <dependency>
     <groupId>org.apache.activemq</groupId>
     <artifactId>activemq-client</artifactId>
-    <version>5.17.2</version>
+    <version>5.18.2</version>
 </dependency>
 
 <!-- MQTT -->
@@ -227,22 +173,22 @@
 <dependency>
     <groupId>com.microsoft.sqlserver</groupId>
     <artifactId>mssql-jdbc</artifactId>
-    <version>7.4.1.jre8</version>
+    <version>7.4.1.jre11</version>
 </dependency>
 
 <!-- Oracle DATABASE -->
 <dependency>
     <groupId>com.oracle.jdbc</groupId>
-    <artifactId>ojdbc8</artifactId>
-    <version>8.0</version>
+    <artifactId>ojdbc11</artifactId>
+    <version>11.0</version>
 </dependency>
 
 <!-- MySQL DATABASE -->
-<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
 <dependency>
-    <groupId>mysql</groupId>
-    <artifactId>mysql-connector-java</artifactId>
-    <version>8.0.29</version>
+    <groupId>com.mysql</groupId>
+    <artifactId>mysql-connector-j</artifactId>
+    <version>8.1.0</version>
 </dependency>
 
 <!-- PostgresQL DATABASE -->
@@ -250,7 +196,7 @@
 <dependency>
     <groupId>org.postgresql</groupId>
     <artifactId>postgresql</artifactId>
-    <version>42.5.1</version>
+    <version>42.6.0</version>
 </dependency>
 
 <!-- HSQLDB DATABASE -->
@@ -258,7 +204,7 @@
 <dependency>
     <groupId>org.hsqldb</groupId>
     <artifactId>hsqldb</artifactId>
-    <version>2.7.1</version>
+    <version>2.7.2</version>
 </dependency>
 
 <!-- https://mvnrepository.com/artifact/org.quartz-scheduler/quartz -->
@@ -288,7 +234,7 @@
 	  <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.11.0</version>
         <configuration>
           <executable>${JAVA_HOME}/bin/javac</executable>
           <source>11</source>
@@ -299,7 +245,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>3.3.2</version>
+				<version>3.4.0</version>
 				<configuration>
 					<!-- Use web.xml -->
                     <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
@@ -327,7 +273,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.3.1</version>
 				<!-- Clean up also any pre-compiled themes -->
 				<configuration>
 					<filesets>

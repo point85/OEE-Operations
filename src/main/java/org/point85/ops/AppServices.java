@@ -30,7 +30,7 @@ public final class AppServices {
 	// singleton
 	private static AppServices services = new AppServices();
 
-	private static boolean isInitialized = false;
+	private boolean isInitialized = false;
 
 	private AppServices() {
 		// collector server
