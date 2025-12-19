@@ -20,7 +20,7 @@
 		<maven.compiler.target>11</maven.compiler.target>
 		<!-- If there are no local customizations, this can also be "fetch" or "cdn" -->
 		<vaadin.widgetset.mode>local</vaadin.widgetset.mode>
-		<log4j2.version>2.23.0</log4j2.version>
+		<log4j2.version>2.25.3</log4j2.version>
 	</properties>
 
 	<repositories>
