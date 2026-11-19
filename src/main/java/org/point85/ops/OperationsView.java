@@ -222,6 +222,7 @@ public class OperationsView extends VerticalLayout {
 		return materialPanel;
 	}
 
+	@SuppressWarnings("unused")
 	private Component createProductionLayout() {
 		groupProductionSummary = new RadioButtonGroup<>(WebOperatorLocalizer.instance().getLangString("production"));
 		groupProductionSummary.setItems(WebOperatorLocalizer.instance().getLangString("by.event"),
@@ -456,6 +457,7 @@ public class OperationsView extends VerticalLayout {
 		btnRecordSetup.setEnabled(enabled);
 	}
 
+	@SuppressWarnings("unused")
 	private Component createReasonTreeLayout() {
 		// tree view of reasons
 		treeGridReason = new TreeGrid<>();
@@ -495,6 +497,7 @@ public class OperationsView extends VerticalLayout {
 		return layout;
 	}
 
+	@SuppressWarnings("unused")
 	private Component createMaterialTreeLayout() {
 		// materials by category
 		treeGridMaterial = new TreeGrid<>();
@@ -537,6 +540,7 @@ public class OperationsView extends VerticalLayout {
 		return layout;
 	}
 
+	@SuppressWarnings("unused")
 	private Component createAvailabilityLayout() {
 		groupAvailabilitySummary = new RadioButtonGroup<>(
 				WebOperatorLocalizer.instance().getLangString("availability"));
@@ -602,6 +606,7 @@ public class OperationsView extends VerticalLayout {
 		return availabilityLayout;
 	}
 
+	@SuppressWarnings("unused")
 	private Component createSetupLayout() {
 
 		tfMaterial = new TextField(WebOperatorLocalizer.instance().getLangString("material"));

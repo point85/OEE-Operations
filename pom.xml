@@ -6,21 +6,20 @@
 	<groupId>org.point85</groupId>
 	<artifactId>OEE-Operator</artifactId>
 	<packaging>war</packaging>
-	<version>3.12.9</version>
+	<version>3.12.10</version>
 	<name>OEE-Operations</name>
 
 	<properties>
-		<domain.version>3.12.9</domain.version>
+		<domain.version>3.12.10</domain.version>
 		<vaadin.version>8.14.3</vaadin.version>
 		<vaadin.plugin.version>8.14.3</vaadin.plugin.version>
-		<jetty.plugin.version>9.4.58.v20250814</jetty.plugin.version>
-		<jetty.version>9.4.58.v20250814</jetty.version>
+		<jetty.plugin.version>12.1.4</jetty.plugin.version>
+		<jetty.version>12.1.4</jetty.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>11</maven.compiler.source>
-		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.release>25</maven.compiler.release>
 		<!-- If there are no local customizations, this can also be "fetch" or "cdn" -->
 		<vaadin.widgetset.mode>local</vaadin.widgetset.mode>
-		<log4j2.version>2.25.5</log4j2.version>
+		<log4j2.version>2.26.1</log4j2.version>
 	</properties>
 
 	<repositories>
@@ -53,7 +52,7 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
+			<version>4.0.1</version>
 			<scope>provided</scope>
 		</dependency>
  		
@@ -83,11 +82,11 @@
     </dependency>
     
     <!--  Jetty servlet -->
-    <dependency>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-servlet</artifactId>
-        <version>${jetty.version}</version> 
-    </dependency>
+	<dependency>
+	    <groupId>org.eclipse.jetty.ee10</groupId>
+	    <artifactId>jetty-ee10-servlets</artifactId>
+	    <version>${jetty.version}</version>
+	</dependency>
     
 <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
 <dependency>
@@ -148,7 +147,7 @@
 <dependency>
     <groupId>org.apache.activemq</groupId>
     <artifactId>activemq-client</artifactId>
-    <version>5.19.11</version>
+    <version>5.19.12</version>
 </dependency>
 
 <!-- MQTT -->
@@ -225,18 +224,18 @@
 	  <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
+        <version>3.14.1</version>
         <configuration>
           <executable>${JAVA_HOME}/bin/javac</executable>
-          <source>11</source>
-          <target>11</target>
+          <source>3.8.1</source>
+          <target>25</target>
         </configuration>
       </plugin>
       
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>3.4.0</version>
+				<version>3.5.1</version>
 				<configuration>
 					<!-- Use web.xml -->
                     <webXml>src/main/webapp/WEB-INF/web.xml</webXml>
@@ -264,7 +263,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
-				<version>3.3.1</version>
+				<version>3.5.0</version>
 				<!-- Clean up also any pre-compiled themes -->
 				<configuration>
 					<filesets>
@@ -281,22 +280,18 @@
 
 			<!-- The Jetty plugin allows us to easily test the development build by
 				running jetty:run on the command line. -->
-			<plugin>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<version>${jetty.plugin.version}</version>
-				<configuration>
-					<scanIntervalSeconds>2</scanIntervalSeconds>
-					<httpConnector>
-                    	<host>localhost</host>
-                     	<port>9888</port>
-                    </httpConnector>
-					<webAppConfig>
-      					<contextPath>/</contextPath>
-      					<webInfIncludeJarPattern>.*/oee-[^/]*\.jar$|.*/classes/.*</webInfIncludeJarPattern>
-				    </webAppConfig>
-				</configuration>
-			</plugin>
+<plugin>
+    <groupId>org.eclipse.jetty.ee8</groupId>
+    <artifactId>jetty-ee8-maven-plugin</artifactId>
+    <version>12.1.15</version>
+    <configuration>
+        <systemProperties>
+        	<jetty.http.port>localhost</jetty.http.port>
+            <jetty.http.host>localhost</jetty.http.host>
+        </systemProperties>
+    </configuration>
+</plugin>
+		
 		</plugins>
 	</build>
 
