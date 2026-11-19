@@ -14,7 +14,7 @@
 		<vaadin.version>8.14.3</vaadin.version>
 		<vaadin.plugin.version>8.14.3</vaadin.plugin.version>
 		<jetty.plugin.version>12.1.4</jetty.plugin.version>
-		<jetty.version>12.1.4</jetty.version>
+		<jetty.version>12.1.10</jetty.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.release>25</maven.compiler.release>
 		<!-- If there are no local customizations, this can also be "fetch" or "cdn" -->
